@@ -43,6 +43,32 @@ HTML_TEMPLATE = """
       h1 { margin: 0 0 8px; font-size: 24px; }
       p { margin: 0 0 18px; color: #cbd5e1; }
       .meta { margin-bottom: 14px; font-size: 14px; color: #93c5fd; }
+      .local-panel {
+        margin-bottom: 14px;
+        padding: 10px;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        background: rgba(15, 23, 42, 0.65);
+      }
+      .local-title {
+        font-size: 12px;
+        color: #93c5fd;
+        margin-bottom: 8px;
+      }
+      .local-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+      .local-input {
+        width: 100%;
+        border: 1px solid #334155;
+        border-radius: 10px;
+        background: #0b1220;
+        color: #e2e8f0;
+        padding: 9px 10px;
+        font-size: 14px;
+      }
       .grid {
         display: grid;
         grid-template-columns: 1fr;
@@ -96,6 +122,13 @@ HTML_TEMPLATE = """
       <p>Выбери дисциплину и нажми кнопку регистрации.</p>
 
       <div class="meta">Пользователь: <span id="username">гость</span></div>
+      <div class="local-panel" id="local-panel" style="display:none;">
+        <div class="local-title">Локальный режим (без Telegram)</div>
+        <div class="local-grid">
+          <input class="local-input" id="local-user-id" type="number" min="1" placeholder="User ID (например 1001)" />
+          <input class="local-input" id="local-username" type="text" placeholder="Имя или username" />
+        </div>
+      </div>
 
       <div class="grid" id="tournaments"></div>
 
@@ -111,18 +144,45 @@ HTML_TEMPLATE = """
       const tournamentsEl = document.getElementById("tournaments");
       const registerBtn = document.getElementById("register-btn");
       const statusEl = document.getElementById("status");
+      const localPanel = document.getElementById("local-panel");
+      const localUserIdInput = document.getElementById("local-user-id");
+      const localUsernameInput = document.getElementById("local-username");
 
       const user = tg?.initDataUnsafe?.user || {};
-      const userId = user.id || null;
+      const isTelegramMode = Boolean(user.id);
+      let effectiveUserId = user.id || null;
+      let effectiveUsername = user.username || null;
+      let effectiveFirstName = user.first_name || null;
 
-      document.getElementById("username").textContent =
-        user.username ? `@${user.username}` : (user.first_name || "гость");
+      if (!isTelegramMode) {
+        localPanel.style.display = "block";
+      }
 
       let selectedTournament = null;
 
       function setStatus(text, isError = false) {
         statusEl.textContent = text;
         statusEl.style.color = isError ? "#fca5a5" : "#93c5fd";
+      }
+
+      function refreshUserContext() {
+        if (isTelegramMode) {
+          effectiveUserId = user.id || null;
+          effectiveUsername = user.username || null;
+          effectiveFirstName = user.first_name || null;
+        } else {
+          const parsedId = Number(localUserIdInput.value);
+          effectiveUserId = Number.isInteger(parsedId) && parsedId > 0 ? parsedId : null;
+          const name = (localUsernameInput.value || "").trim();
+          effectiveUsername = name || null;
+          effectiveFirstName = name || null;
+        }
+
+        document.getElementById("username").textContent = effectiveUsername
+          ? (effectiveUsername.startsWith("@") ? effectiveUsername : `@${effectiveUsername}`)
+          : (effectiveFirstName || "гость");
+
+        registerBtn.disabled = !(selectedTournament && effectiveUserId);
       }
 
       function renderTournamentButtons() {
@@ -135,7 +195,7 @@ HTML_TEMPLATE = """
             selectedTournament = name;
             document.querySelectorAll(".tour-btn").forEach((x) => x.classList.remove("active"));
             btn.classList.add("active");
-            registerBtn.disabled = !userId;
+            registerBtn.disabled = !effectiveUserId;
             setStatus(`Выбрано: ${name}`);
           });
           tournamentsEl.appendChild(btn);
@@ -143,13 +203,13 @@ HTML_TEMPLATE = """
       }
 
       async function loadExistingRegistration() {
-        if (!userId) {
-          setStatus("Открой мини-приложение из Telegram, чтобы зарегистрироваться.", true);
+        if (!effectiveUserId) {
+          setStatus("Укажи User ID (локально) или открой мини-приложение из Telegram.", true);
           return;
         }
 
         try {
-          const res = await fetch(`/api/registration/${userId}`);
+          const res = await fetch(`/api/registration/${effectiveUserId}`);
           if (!res.ok) return;
           const data = await res.json();
           if (!data.registration) return;
@@ -160,7 +220,7 @@ HTML_TEMPLATE = """
               btn.classList.add("active");
             }
           });
-          registerBtn.disabled = false;
+          registerBtn.disabled = !effectiveUserId;
           setStatus(`Ты уже зарегистрирован на: ${selectedTournament}`);
         } catch {
           setStatus("Не удалось загрузить текущую регистрацию.", true);
@@ -168,8 +228,9 @@ HTML_TEMPLATE = """
       }
 
       registerBtn.addEventListener("click", async () => {
-        if (!userId || !selectedTournament) {
-          setStatus("Сначала выбери турнир.", true);
+        refreshUserContext();
+        if (!effectiveUserId || !selectedTournament) {
+          setStatus("Сначала выбери турнир и укажи User ID.", true);
           return;
         }
 
@@ -178,9 +239,9 @@ HTML_TEMPLATE = """
 
         try {
           const payload = {
-            user_id: userId,
-            username: user.username || null,
-            first_name: user.first_name || null,
+            user_id: effectiveUserId,
+            username: effectiveUsername,
+            first_name: effectiveFirstName,
             tournament: selectedTournament,
           };
 
@@ -207,6 +268,14 @@ HTML_TEMPLATE = """
       });
 
       renderTournamentButtons();
+      refreshUserContext();
+      if (!isTelegramMode) {
+        localUserIdInput.addEventListener("input", () => {
+          refreshUserContext();
+          loadExistingRegistration();
+        });
+        localUsernameInput.addEventListener("input", refreshUserContext);
+      }
       loadExistingRegistration();
     </script>
   </body>
