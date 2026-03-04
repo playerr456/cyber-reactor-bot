@@ -19,6 +19,6 @@ if not BOT_TOKEN:
     BOT_TOKEN = _read_token_from_file("bot_token.txt")
 
 # URL мини-приложения (FastAPI)
-WEBAPP_URL = os.getenv("WEBAPP_URL", "https://example.com")
+WEBAPP_URL = os.getenv("WEBAPP_URL", "https://cyber-reactor-bot.vercel.app")
 WEBAPP_HOST = os.getenv("WEBAPP_HOST", "0.0.0.0")
 WEBAPP_PORT = int(os.getenv("WEBAPP_PORT", "8000"))
