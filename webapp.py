@@ -19,73 +19,85 @@ HTML_TEMPLATE = """
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cyber Reactor Tournaments</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
     <style>
       * { box-sizing: border-box; }
       body {
         margin: 0;
-        font-family: "Segoe UI", Tahoma, sans-serif;
-        background: radial-gradient(circle at top right, #1d4ed8 0%, #050816 60%);
-        color: #f9fafb;
+        font-family: "Manrope", "Segoe UI", sans-serif;
+        background: #f4f5f7;
+        color: #121417;
         display: flex;
         align-items: center;
         justify-content: center;
         min-height: 100vh;
-        padding: 16px;
+        padding: 20px;
       }
       .card {
         width: min(460px, 100%);
-        padding: 24px 20px;
-        border-radius: 18px;
-        background: rgba(11, 17, 32, 0.92);
-        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
-        border: 1px solid rgba(148, 163, 184, 0.24);
+        padding: 22px 18px;
+        border-radius: 16px;
+        background: #ffffff;
+        box-shadow: 0 8px 30px rgba(18, 20, 23, 0.08);
+        border: 1px solid #e8ebef;
       }
-      h1 { margin: 0 0 8px; font-size: 24px; }
-      p { margin: 0 0 18px; color: #cbd5e1; }
-      .meta { margin-bottom: 14px; font-size: 14px; color: #93c5fd; }
+      h1 { margin: 0 0 6px; font-size: 24px; font-weight: 800; letter-spacing: -0.02em; }
+      p { margin: 0 0 16px; color: #5a6472; font-size: 14px; }
+      .meta {
+        margin-bottom: 14px;
+        font-size: 13px;
+        color: #364152;
+        padding: 10px 12px;
+        background: #f8fafc;
+        border: 1px solid #e8ebef;
+        border-radius: 10px;
+      }
       .grid {
         display: grid;
         grid-template-columns: 1fr;
-        gap: 10px;
+        gap: 8px;
       }
       .tour-btn {
         text-align: left;
-        border: 1px solid #334155;
-        border-radius: 12px;
-        background: #0f172a;
-        color: #e2e8f0;
-        padding: 12px 14px;
-        font-size: 15px;
+        border: 1px solid #d7dce3;
+        border-radius: 10px;
+        background: #ffffff;
+        color: #1f2937;
+        padding: 12px;
+        font-size: 14px;
+        font-weight: 700;
         cursor: pointer;
         transition: 0.15s ease;
       }
-      .tour-btn:hover { border-color: #60a5fa; }
+      .tour-btn:hover { border-color: #1f2937; }
       .tour-btn.active {
-        border-color: #22d3ee;
-        background: linear-gradient(135deg, #0f172a, #1e293b);
-        box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.5) inset;
+        border-color: #111827;
+        background: #f3f4f6;
+        box-shadow: none;
       }
       .register-btn {
         width: 100%;
-        margin-top: 16px;
-        border: none;
-        border-radius: 999px;
-        background: linear-gradient(135deg, #22c1c3, #3b82f6);
-        color: #0b1120;
-        font-size: 15px;
+        margin-top: 14px;
+        border: 1px solid #111827;
+        border-radius: 10px;
+        background: #111827;
+        color: #ffffff;
+        font-size: 14px;
         font-weight: 700;
-        padding: 11px 14px;
+        padding: 11px 12px;
         cursor: pointer;
       }
       .register-btn:disabled {
-        opacity: 0.45;
+        opacity: 0.5;
         cursor: not-allowed;
       }
       .status {
         min-height: 20px;
         margin-top: 12px;
-        font-size: 13px;
-        color: #93c5fd;
+        font-size: 12px;
+        color: #5a6472;
       }
     </style>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
