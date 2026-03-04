@@ -1,13 +1,22 @@
 import os
 import sqlite3
+from pathlib import Path
 from typing import Any
 
 
-DB_PATH = os.getenv("DB_PATH", "cyber_reactor.db")
+def _default_db_path() -> str:
+    # Vercel serverless allows writing to /tmp only.
+    if os.getenv("VERCEL") and not os.getenv("DB_PATH"):
+        return "/tmp/cyber_reactor.db"
+    return os.getenv("DB_PATH", "cyber_reactor.db")
+
+
+DB_PATH = _default_db_path()
 ALLOWED_TOURNAMENTS = {"clash royale", "dota 2", "cs go"}
 
 
 def _get_connection() -> sqlite3.Connection:
+    Path(DB_PATH).parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
@@ -69,4 +78,3 @@ def get_registration(user_id: int) -> dict[str, Any] | None:
         ).fetchone()
 
     return dict(row) if row else None
-

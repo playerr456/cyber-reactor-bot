@@ -223,7 +223,12 @@ class RegisterRequest(BaseModel):
 
 @app.on_event("startup")
 def startup() -> None:
-    init_db()
+    try:
+        init_db()
+        app.state.db_error = None
+    except Exception as exc:
+        # Do not crash the whole app on serverless startup.
+        app.state.db_error = str(exc)
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -233,6 +238,9 @@ async def index(request: Request) -> HTMLResponse:
 
 @app.post("/api/register")
 async def register(payload: RegisterRequest) -> dict[str, str]:
+    if getattr(app.state, "db_error", None):
+        raise HTTPException(status_code=503, detail=f"DB is unavailable: {app.state.db_error}")
+
     tournament = payload.tournament.strip().lower()
     if tournament not in ALLOWED_TOURNAMENTS:
         raise HTTPException(status_code=400, detail="Unsupported tournament")
@@ -248,6 +256,9 @@ async def register(payload: RegisterRequest) -> dict[str, str]:
 
 @app.get("/api/registration/{user_id}")
 async def registration(user_id: int) -> dict[str, object]:
+    if getattr(app.state, "db_error", None):
+        raise HTTPException(status_code=503, detail=f"DB is unavailable: {app.state.db_error}")
+
     data = get_registration(user_id)
     return {"registration": data}
 
