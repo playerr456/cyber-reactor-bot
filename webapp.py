@@ -389,7 +389,7 @@ HTML_TEMPLATE = """
           </div>
         </a>
         <a href="#registration" class="channel-link">
-          <span class="channel-icon" style="background:#adb9c8">#</span>
+          <span class="channel-icon" style="background:#adb9c8">CR</span>
           <div class="channel-meta">
             <p class="channel-title">CLASH ROYALE</p>
           </div>
