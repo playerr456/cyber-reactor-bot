@@ -331,6 +331,7 @@ HTML_TEMPLATE = """
         }
       }
     </style>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
   </head>
   <body>
     <button id="menu-toggle" class="menu-toggle" type="button" data-i18n="menuOpen">Киберспортивные дисциплины</button>
@@ -414,6 +415,72 @@ HTML_TEMPLATE = """
     </main>
 
     <script>
+      function parseUserFromQueryString(raw) {
+        if (!raw) {
+          return null;
+        }
+        try {
+          const userJson = new URLSearchParams(raw).get("user");
+          return userJson ? JSON.parse(userJson) : null;
+        } catch {
+          return null;
+        }
+      }
+
+      function parseUserFromLocation() {
+        try {
+          const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+          const searchParams = new URLSearchParams(window.location.search);
+          const tgWebAppData = hashParams.get("tgWebAppData") || searchParams.get("tgWebAppData");
+          if (tgWebAppData) {
+            const decoded = decodeURIComponent(tgWebAppData);
+            const fromData = parseUserFromQueryString(decoded);
+            if (fromData) {
+              return fromData;
+            }
+          }
+          const tgWebAppUser = hashParams.get("tgWebAppUser") || searchParams.get("tgWebAppUser");
+          if (tgWebAppUser) {
+            return JSON.parse(decodeURIComponent(tgWebAppUser));
+          }
+        } catch {
+          return null;
+        }
+        return null;
+      }
+
+      function cacheTelegramIdentity() {
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+          tg.ready?.();
+          tg.expand?.();
+        }
+
+        const unsafeUser = tg?.initDataUnsafe?.user || null;
+        const parsedUser = !unsafeUser && tg?.initData ? parseUserFromQueryString(tg.initData) : null;
+        const urlUser = parseUserFromLocation();
+        const user = unsafeUser || parsedUser || urlUser || null;
+
+        const rawId = user?.id ?? null;
+        const parsedId = rawId !== null ? Number.parseInt(String(rawId), 10) : NaN;
+        if (!Number.isFinite(parsedId) || parsedId <= 0) {
+          return;
+        }
+
+        try {
+          localStorage.setItem(
+            "cyber_tg_user_cache",
+            JSON.stringify({
+              id: parsedId,
+              username: user?.username ? String(user.username).toLowerCase() : null,
+              ts: Date.now(),
+            }),
+          );
+        } catch {}
+      }
+
+      cacheTelegramIdentity();
+
       const I18N = {
         ru: {
           menuOpen: "Киберспортивные дисциплины",
@@ -829,6 +896,25 @@ CLASH_TEMPLATE = """
         return null;
       }
 
+      function parseUserFromCache() {
+        try {
+          const raw = localStorage.getItem("cyber_tg_user_cache");
+          if (!raw) {
+            return null;
+          }
+          const cached = JSON.parse(raw);
+          if (!cached || !cached.id) {
+            return null;
+          }
+          if (cached.ts && Date.now() - Number(cached.ts) > 30 * 24 * 60 * 60 * 1000) {
+            return null;
+          }
+          return cached;
+        } catch {
+          return null;
+        }
+      }
+
       function refreshTelegramIdentity() {
         const unsafeUser = tg?.initDataUnsafe?.user || null;
         let parsedUser = null;
@@ -836,11 +922,25 @@ CLASH_TEMPLATE = """
           parsedUser = parseUserFromQueryString(tg.initData);
         }
         const urlUser = parseUserFromUrl();
-        const telegramUser = unsafeUser || parsedUser || urlUser || {};
+        const cachedUser = parseUserFromCache();
+        const telegramUser = unsafeUser || parsedUser || urlUser || cachedUser || {};
         const rawUserId = telegramUser.id ?? null;
         const parsedUserId = rawUserId !== null ? Number.parseInt(String(rawUserId), 10) : NaN;
         telegramUserId = Number.isFinite(parsedUserId) && parsedUserId > 0 ? parsedUserId : null;
         telegramUsername = telegramUser.username ? String(telegramUser.username).toLowerCase() : null;
+
+        if (telegramUserId !== null) {
+          try {
+            localStorage.setItem(
+              "cyber_tg_user_cache",
+              JSON.stringify({
+                id: telegramUserId,
+                username: telegramUsername,
+                ts: Date.now(),
+              }),
+            );
+          } catch {}
+        }
       }
 
       function ensureTelegramId() {
