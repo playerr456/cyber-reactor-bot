@@ -48,6 +48,19 @@ HTML_TEMPLATE = """
         min-height: 100vh;
       }
 
+      body.theme-dark {
+        --bg: #0f172a;
+        --surface: #111827;
+        --surface-soft: #1f2937;
+        --text: #e5e7eb;
+        --text-muted: #9ca3af;
+        --line: #334155;
+        --accent: #60a5fa;
+        --accent-soft: #1e3a5f;
+        --ok: #34d399;
+        --error: #f87171;
+      }
+
       .menu-toggle {
         position: fixed;
         left: 16px;
@@ -61,6 +74,22 @@ HTML_TEMPLATE = """
         font-size: 13px;
         font-weight: 600;
         line-height: 1.2;
+        cursor: pointer;
+      }
+
+      .settings-toggle {
+        position: fixed;
+        right: 16px;
+        top: 16px;
+        z-index: 40;
+        border: 1px solid var(--line);
+        background: var(--surface);
+        color: var(--text);
+        border-radius: 10px;
+        width: 42px;
+        height: 42px;
+        font-size: 20px;
+        line-height: 1;
         cursor: pointer;
       }
 
@@ -96,6 +125,59 @@ HTML_TEMPLATE = """
 
       .sidebar.open {
         transform: translateX(0);
+      }
+
+      .settings-panel {
+        position: fixed;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: min(320px, 84vw);
+        z-index: 50;
+        background: var(--surface);
+        border-left: 1px solid var(--line);
+        transform: translateX(100%);
+        transition: transform 0.22s ease;
+        padding: 18px 12px 18px 16px;
+      }
+
+      .settings-panel.open {
+        transform: translateX(0);
+      }
+
+      .settings-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+      }
+
+      .settings-head h2 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 700;
+      }
+
+      .settings-group {
+        display: grid;
+        gap: 6px;
+        margin-bottom: 12px;
+      }
+
+      .settings-group label {
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+
+      .settings-group select {
+        width: 100%;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        background: var(--surface-soft);
+        color: var(--text);
+        padding: 10px 12px;
+        font-family: inherit;
+        font-size: 14px;
       }
 
       .sidebar-head {
@@ -354,12 +436,14 @@ HTML_TEMPLATE = """
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
   </head>
   <body>
-    <button id="menu-toggle" class="menu-toggle" type="button">Киберспортивные дисциплины</button>
+    <button id="menu-toggle" class="menu-toggle" type="button" data-i18n="menuButton">Киберспортивные дисциплины</button>
+    <button id="settings-toggle" class="settings-toggle" type="button" aria-label="Настройки">&#9881;</button>
     <div id="menu-overlay" class="overlay"></div>
+    <div id="settings-overlay" class="overlay"></div>
 
     <aside id="sidebar" class="sidebar" aria-hidden="true">
       <div class="sidebar-head">
-        <h2>Киберспортивные дисциплины</h2>
+        <h2 data-i18n="sidebarTitle">Киберспортивные дисциплины</h2>
         <button id="close-menu" class="close-menu" type="button" aria-label="Закрыть">x</button>
       </div>
 
@@ -421,41 +505,77 @@ HTML_TEMPLATE = """
       </nav>
     </aside>
 
+    <aside id="settings-panel" class="settings-panel" aria-hidden="true">
+      <div class="settings-head">
+        <h2 data-i18n="settingsTitle">Настройки</h2>
+        <button id="close-settings" class="close-menu" type="button" aria-label="Закрыть">x</button>
+      </div>
+
+      <div class="settings-group">
+        <label for="language-select" data-i18n="languageLabel">Язык</label>
+        <select id="language-select">
+          <option value="ru" data-i18n="langRu">Русский</option>
+          <option value="en" data-i18n="langEn">English</option>
+        </select>
+      </div>
+
+      <div class="settings-group">
+        <label for="theme-select" data-i18n="themeLabel">Тема</label>
+        <select id="theme-select">
+          <option value="light" data-i18n="themeLight">Светлая</option>
+          <option value="dark" data-i18n="themeDark">Темная</option>
+        </select>
+      </div>
+    </aside>
+
     <main class="page">
       <header class="hero" id="banner">
         <span class="hero-tag">Cyber Reactor</span>
-        <h1>Титульная страница турниров</h1>
-        <p>Следи за лобби, выбирай дисциплину и регистрируйся на ближайшие матчи прямо из мини-приложения.</p>
-        <a href="#registration" class="hero-cta">К регистрации</a>
+        <h1 data-i18n="heroTitle">Титульная страница турниров</h1>
+        <p data-i18n="heroText">Следи за лобби, выбирай дисциплину и регистрируйся на ближайшие матчи прямо из мини-приложения.</p>
+        <a href="#registration" class="hero-cta" data-i18n="heroCta">К регистрации</a>
       </header>
 
       <div class="stack">
         <section class="panel" id="registration">
-          <h2>Регистрация на турнир</h2>
-          <p>Выбери дисциплину и нажми кнопку регистрации.</p>
+          <h2 data-i18n="registrationTitle">Регистрация на турнир</h2>
+          <p data-i18n="registrationText">Выбери дисциплину и нажми кнопку регистрации.</p>
 
-          <div class="meta">Пользователь: <span id="username">гость</span></div>
+          <div class="meta"><span id="user-label" data-i18n="userLabel">Пользователь</span>: <span id="username">гость</span></div>
 
           <div class="grid" id="tournaments"></div>
 
-          <button id="register-btn" class="register-btn" disabled>Зарегистрироваться</button>
+          <button id="register-btn" class="register-btn" disabled data-i18n="registerButton">Зарегистрироваться</button>
           <div class="status" id="status"></div>
         </section>
 
         <section class="panel" id="feedback">
-          <h2>Обратная связь</h2>
-          <p>Напиши, что улучшить в расписании, комнатах или интерфейсе.</p>
+          <h2 data-i18n="feedbackTitle">Обратная связь</h2>
+          <p data-i18n="feedbackText">Напиши, что улучшить в расписании, комнатах или интерфейсе.</p>
 
           <form id="feedback-form" class="feedback-form">
             <div>
-              <label for="feedback-name">Имя</label>
-              <input id="feedback-name" name="name" type="text" maxlength="70" placeholder="Как к тебе обращаться" />
+              <label for="feedback-name" data-i18n="feedbackNameLabel">Имя</label>
+              <input
+                id="feedback-name"
+                name="name"
+                type="text"
+                maxlength="70"
+                placeholder="Как к тебе обращаться"
+                data-i18n-placeholder="feedbackNamePlaceholder"
+              />
             </div>
             <div>
-              <label for="feedback-message">Сообщение</label>
-              <textarea id="feedback-message" name="message" maxlength="1000" placeholder="Твой отзыв"></textarea>
+              <label for="feedback-message" data-i18n="feedbackMessageLabel">Сообщение</label>
+              <textarea
+                id="feedback-message"
+                name="message"
+                maxlength="1000"
+                placeholder="Твой отзыв"
+                data-i18n-placeholder="feedbackMessagePlaceholder"
+              ></textarea>
             </div>
-            <button class="feedback-btn" type="submit">Отправить отзыв</button>
+            <button class="feedback-btn" type="submit" data-i18n="feedbackSubmit">Отправить отзыв</button>
             <div class="feedback-status" id="feedback-status"></div>
           </form>
         </section>
@@ -467,6 +587,87 @@ HTML_TEMPLATE = """
       if (tg) tg.expand();
 
       const TOURNAMENTS = ["clash royale", "dota 2", "cs go"];
+      const I18N = {
+        ru: {
+          menuButton: "Киберспортивные дисциплины",
+          sidebarTitle: "Киберспортивные дисциплины",
+          settingsTitle: "Настройки",
+          languageLabel: "Язык",
+          themeLabel: "Тема",
+          langRu: "Русский",
+          langEn: "English",
+          themeLight: "Светлая",
+          themeDark: "Темная",
+          heroTitle: "Титульная страница турниров",
+          heroText: "Следи за лобби, выбирай дисциплину и регистрируйся на ближайшие матчи прямо из мини-приложения.",
+          heroCta: "К регистрации",
+          registrationTitle: "Регистрация на турнир",
+          registrationText: "Выбери дисциплину и нажми кнопку регистрации.",
+          userLabel: "Пользователь",
+          guest: "гость",
+          registerButton: "Зарегистрироваться",
+          feedbackTitle: "Обратная связь",
+          feedbackText: "Напиши, что улучшить в расписании, комнатах или интерфейсе.",
+          feedbackNameLabel: "Имя",
+          feedbackNamePlaceholder: "Как к тебе обращаться",
+          feedbackMessageLabel: "Сообщение",
+          feedbackMessagePlaceholder: "Твой отзыв",
+          feedbackSubmit: "Отправить отзыв",
+          close: "Закрыть",
+          statusSelected: "Выбрано: {name}",
+          statusOpenTelegram: "Открой мини-приложение из Telegram, чтобы зарегистрироваться.",
+          statusLoadRegistrationError: "Не удалось загрузить текущую регистрацию.",
+          statusAlreadyRegistered: "Ты уже зарегистрирован на: {name}",
+          statusChooseFirst: "Сначала выбери турнир.",
+          statusSaving: "Сохраняю в базу...",
+          statusSaved: "Регистрация сохранена: {name}",
+          statusRegistrationError: "Ошибка регистрации.",
+          feedbackTooShort: "Напиши хотя бы 3 символа.",
+          feedbackSending: "Отправляю...",
+          feedbackSent: "Спасибо за отзыв!",
+          feedbackError: "Не удалось отправить отзыв.",
+        },
+        en: {
+          menuButton: "Esports Disciplines",
+          sidebarTitle: "Esports Disciplines",
+          settingsTitle: "Settings",
+          languageLabel: "Language",
+          themeLabel: "Theme",
+          langRu: "Russian",
+          langEn: "English",
+          themeLight: "Light",
+          themeDark: "Dark",
+          heroTitle: "Tournament Landing Page",
+          heroText: "Follow lobbies, choose a discipline, and register for upcoming matches right from the mini app.",
+          heroCta: "Go to registration",
+          registrationTitle: "Tournament Registration",
+          registrationText: "Choose a discipline and click the registration button.",
+          userLabel: "User",
+          guest: "guest",
+          registerButton: "Register",
+          feedbackTitle: "Feedback",
+          feedbackText: "Tell us what to improve in schedule, rooms, or interface.",
+          feedbackNameLabel: "Name",
+          feedbackNamePlaceholder: "How should we address you",
+          feedbackMessageLabel: "Message",
+          feedbackMessagePlaceholder: "Your feedback",
+          feedbackSubmit: "Send feedback",
+          close: "Close",
+          statusSelected: "Selected: {name}",
+          statusOpenTelegram: "Open this mini app from Telegram to register.",
+          statusLoadRegistrationError: "Failed to load current registration.",
+          statusAlreadyRegistered: "You are already registered for: {name}",
+          statusChooseFirst: "Choose a tournament first.",
+          statusSaving: "Saving to database...",
+          statusSaved: "Registration saved: {name}",
+          statusRegistrationError: "Registration error.",
+          feedbackTooShort: "Please enter at least 3 characters.",
+          feedbackSending: "Sending...",
+          feedbackSent: "Thanks for your feedback!",
+          feedbackError: "Failed to send feedback.",
+        },
+      };
+
       const tournamentsEl = document.getElementById("tournaments");
       const registerBtn = document.getElementById("register-btn");
       const statusEl = document.getElementById("status");
@@ -478,16 +679,60 @@ HTML_TEMPLATE = """
       const menuToggle = document.getElementById("menu-toggle");
       const closeMenu = document.getElementById("close-menu");
       const menuOverlay = document.getElementById("menu-overlay");
+      const settingsPanel = document.getElementById("settings-panel");
+      const settingsToggle = document.getElementById("settings-toggle");
+      const closeSettings = document.getElementById("close-settings");
+      const settingsOverlay = document.getElementById("settings-overlay");
+      const languageSelect = document.getElementById("language-select");
+      const themeSelect = document.getElementById("theme-select");
       const channelLinks = document.querySelectorAll(".channel-link");
 
       const user = tg?.initDataUnsafe?.user || {};
       const userId = user.id || null;
+      let currentLanguage = localStorage.getItem("cyber_lang") || "ru";
 
-      document.getElementById("username").textContent =
-        user.username ? `@${user.username}` : (user.first_name || "гость");
       feedbackNameEl.value = user.first_name || user.username || "";
-
       let selectedTournament = null;
+
+      function t(key, params = {}) {
+        const dict = I18N[currentLanguage] || I18N.ru;
+        const text = dict[key] || I18N.ru[key] || key;
+        return text.replace(/\{(\w+)\}/g, (_, token) => String(params[token] ?? `{${token}}`));
+      }
+
+      function renderUserName() {
+        const usernameEl = document.getElementById("username");
+        usernameEl.textContent = user.username ? `@${user.username}` : (user.first_name || t("guest"));
+      }
+
+      function applyLanguage(lang) {
+        currentLanguage = I18N[lang] ? lang : "ru";
+        document.documentElement.lang = currentLanguage;
+        languageSelect.value = currentLanguage;
+        localStorage.setItem("cyber_lang", currentLanguage);
+
+        document.querySelectorAll("[data-i18n]").forEach((el) => {
+          const key = el.dataset.i18n;
+          el.textContent = t(key);
+        });
+
+        document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+          const key = el.dataset.i18nPlaceholder;
+          el.placeholder = t(key);
+        });
+
+        closeMenu.setAttribute("aria-label", t("close"));
+        closeSettings.setAttribute("aria-label", t("close"));
+        settingsToggle.setAttribute("aria-label", t("settingsTitle"));
+        renderUserName();
+      }
+
+      function applyTheme(theme) {
+        const safeTheme = theme === "dark" ? "dark" : "light";
+        document.body.classList.toggle("theme-dark", safeTheme === "dark");
+        themeSelect.value = safeTheme;
+        localStorage.setItem("cyber_theme", safeTheme);
+      }
 
       function setStatus(text, isError = false) {
         statusEl.textContent = text;
@@ -500,6 +745,7 @@ HTML_TEMPLATE = """
       }
 
       function openMenu() {
+        closeSettingsPanel();
         sidebar.classList.add("open");
         menuOverlay.classList.add("visible");
         sidebar.setAttribute("aria-hidden", "false");
@@ -509,6 +755,19 @@ HTML_TEMPLATE = """
         sidebar.classList.remove("open");
         menuOverlay.classList.remove("visible");
         sidebar.setAttribute("aria-hidden", "true");
+      }
+
+      function openSettings() {
+        closeSidebar();
+        settingsPanel.classList.add("open");
+        settingsOverlay.classList.add("visible");
+        settingsPanel.setAttribute("aria-hidden", "false");
+      }
+
+      function closeSettingsPanel() {
+        settingsPanel.classList.remove("open");
+        settingsOverlay.classList.remove("visible");
+        settingsPanel.setAttribute("aria-hidden", "true");
       }
 
       function renderTournamentButtons() {
@@ -522,7 +781,7 @@ HTML_TEMPLATE = """
             document.querySelectorAll(".tour-btn").forEach((x) => x.classList.remove("active"));
             btn.classList.add("active");
             registerBtn.disabled = !userId;
-            setStatus(`Выбрано: ${name}`);
+            setStatus(t("statusSelected", { name }));
           });
           tournamentsEl.appendChild(btn);
         });
@@ -530,7 +789,7 @@ HTML_TEMPLATE = """
 
       async function loadExistingRegistration() {
         if (!userId) {
-          setStatus("Открой мини-приложение из Telegram, чтобы зарегистрироваться.", true);
+          setStatus(t("statusOpenTelegram"), true);
           return;
         }
 
@@ -547,20 +806,20 @@ HTML_TEMPLATE = """
             }
           });
           registerBtn.disabled = false;
-          setStatus(`Ты уже зарегистрирован на: ${selectedTournament}`);
+          setStatus(t("statusAlreadyRegistered", { name: selectedTournament }));
         } catch {
-          setStatus("Не удалось загрузить текущую регистрацию.", true);
+          setStatus(t("statusLoadRegistrationError"), true);
         }
       }
 
       registerBtn.addEventListener("click", async () => {
         if (!userId || !selectedTournament) {
-          setStatus("Сначала выбери турнир.", true);
+          setStatus(t("statusChooseFirst"), true);
           return;
         }
 
         registerBtn.disabled = true;
-        setStatus("Сохраняю в базу...");
+        setStatus(t("statusSaving"));
 
         try {
           const payload = {
@@ -581,12 +840,12 @@ HTML_TEMPLATE = """
             throw new Error(data.detail || "Ошибка регистрации");
           }
 
-          setStatus(data.message || "Регистрация сохранена.");
+          setStatus(t("statusSaved", { name: selectedTournament }));
           if (tg) {
             tg.sendData(JSON.stringify({ type: "registration", tournament: selectedTournament }));
           }
         } catch (err) {
-          setStatus(err.message || "Ошибка регистрации.", true);
+          setStatus(err.message || t("statusRegistrationError"), true);
         } finally {
           registerBtn.disabled = false;
         }
@@ -596,11 +855,11 @@ HTML_TEMPLATE = """
         event.preventDefault();
         const message = feedbackMessageEl.value.trim();
         if (message.length < 3) {
-          setFeedbackStatus("Напиши хотя бы 3 символа.", true);
+          setFeedbackStatus(t("feedbackTooShort"), true);
           return;
         }
 
-        setFeedbackStatus("Отправляю...");
+        setFeedbackStatus(t("feedbackSending"));
         const payload = {
           name: feedbackNameEl.value.trim() || null,
           message,
@@ -618,16 +877,21 @@ HTML_TEMPLATE = """
           if (!res.ok) {
             throw new Error(data.detail || "Ошибка отправки");
           }
-          setFeedbackStatus(data.message || "Спасибо за отзыв!");
+          setFeedbackStatus(t("feedbackSent"));
           feedbackMessageEl.value = "";
         } catch (err) {
-          setFeedbackStatus(err.message || "Не удалось отправить отзыв.", true);
+          setFeedbackStatus(err.message || t("feedbackError"), true);
         }
       });
 
       menuToggle.addEventListener("click", openMenu);
       closeMenu.addEventListener("click", closeSidebar);
       menuOverlay.addEventListener("click", closeSidebar);
+      settingsToggle.addEventListener("click", openSettings);
+      closeSettings.addEventListener("click", closeSettingsPanel);
+      settingsOverlay.addEventListener("click", closeSettingsPanel);
+      languageSelect.addEventListener("change", (event) => applyLanguage(event.target.value));
+      themeSelect.addEventListener("change", (event) => applyTheme(event.target.value));
       channelLinks.forEach((link) => {
         link.addEventListener("click", () => {
           channelLinks.forEach((item) => item.classList.remove("active"));
@@ -636,6 +900,8 @@ HTML_TEMPLATE = """
         });
       });
 
+      applyTheme(localStorage.getItem("cyber_theme") || "light");
+      applyLanguage(currentLanguage);
       renderTournamentButtons();
       loadExistingRegistration();
     </script>
