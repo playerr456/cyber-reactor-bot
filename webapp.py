@@ -372,12 +372,12 @@ HTML_TEMPLATE = """
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
   </head>
   <body>
-    <button id="menu-toggle" class="menu-toggle" type="button">Каналы</button>
+    <button id="menu-toggle" class="menu-toggle" type="button">Киберспортивные дисциплины</button>
     <div id="menu-overlay" class="overlay"></div>
 
     <aside id="sidebar" class="sidebar" aria-hidden="true">
       <div class="sidebar-head">
-        <h2>Каналы</h2>
+        <h2>Киберспортивные дисциплины</h2>
         <button id="close-menu" class="close-menu" type="button" aria-label="Закрыть">x</button>
       </div>
 
@@ -386,63 +386,54 @@ HTML_TEMPLATE = """
           <span class="channel-icon" style="background:#ffb637">CS</span>
           <div class="channel-meta">
             <p class="channel-title">CS2</p>
-            <p class="channel-preview">Andrey: Сбор в 20:00</p>
           </div>
         </a>
         <a href="#registration" class="channel-link">
           <span class="channel-icon" style="background:#adb9c8">#</span>
           <div class="channel-meta">
-            <p class="channel-title">General</p>
-            <p class="channel-preview">Даня: /join турнир</p>
+            <p class="channel-title">CLASH ROYALE</p>
           </div>
         </a>
         <a href="#registration" class="channel-link">
           <span class="channel-icon" style="background:#68ff9b">F</span>
           <div class="channel-meta">
             <p class="channel-title">FIFA</p>
-            <p class="channel-preview">Денис: кто сегодня в сетке?</p>
           </div>
         </a>
         <a href="#registration" class="channel-link">
           <span class="channel-icon" style="background:#e7cc97">M</span>
           <div class="channel-meta">
             <p class="channel-title">MLBB</p>
-            <p class="channel-preview">Данила: окей, играем</p>
           </div>
         </a>
         <a href="#registration" class="channel-link">
           <span class="channel-icon" style="background:#8cb7ff">H</span>
           <div class="channel-meta">
             <p class="channel-title">Hearthstone</p>
-            <p class="channel-preview">Andrey: свисс на 4 раунда</p>
           </div>
         </a>
         <a href="#registration" class="channel-link">
           <span class="channel-icon" style="background:#ff6568">D2</span>
           <div class="channel-meta">
             <p class="channel-title">Dota 2</p>
-            <p class="channel-preview">Камиль: 3 место гарант</p>
           </div>
         </a>
         <a href="#feedback" class="channel-link">
           <span class="channel-icon" style="background:#ff964d">MT</span>
           <div class="channel-meta">
             <p class="channel-title">Мир Танков</p>
-            <p class="channel-preview">Данила: собираю стак</p>
           </div>
         </a>
         <a href="#feedback" class="channel-link">
           <span class="channel-icon" style="background:#8ab4d8">CH</span>
           <div class="channel-meta">
             <p class="channel-title">Общий чат</p>
-            <p class="channel-preview">Евгений: по 5м без афк</p>
           </div>
         </a>
         <a href="#feedback" class="channel-link">
           <span class="channel-icon" style="background:#ffd367">T</span>
           <div class="channel-meta">
             <p class="channel-title">Tekken</p>
-            <p class="channel-preview">Andrey: УДАР!</p>
           </div>
         </a>
       </nav>
