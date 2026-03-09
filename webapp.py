@@ -771,28 +771,18 @@ CLASH_TEMPLATE = """
 
     <script>
       const tg = window.Telegram?.WebApp;
-      if (tg) tg.expand();
+      if (tg) {
+        tg.ready?.();
+        tg.expand?.();
+      }
 
       const form = document.getElementById("clash-form");
       const submitBtn = document.getElementById("submit-btn");
       const statusEl = document.getElementById("status");
       const existingActionEl = document.getElementById("existing-action");
       const editExistingBtn = document.getElementById("edit-existing-btn");
-      const unsafeUser = tg?.initDataUnsafe?.user || null;
-      let parsedUser = null;
-      if (!unsafeUser && tg?.initData) {
-        try {
-          const rawUser = new URLSearchParams(tg.initData).get("user");
-          parsedUser = rawUser ? JSON.parse(rawUser) : null;
-        } catch {
-          parsedUser = null;
-        }
-      }
-      const telegramUser = unsafeUser || parsedUser || {};
-      const rawTelegramUserId = telegramUser.id ?? null;
-      const parsedTelegramUserId = rawTelegramUserId !== null ? Number.parseInt(String(rawTelegramUserId), 10) : NaN;
-      const telegramUserId = Number.isFinite(parsedTelegramUserId) && parsedTelegramUserId > 0 ? parsedTelegramUserId : null;
-      const telegramUsername = telegramUser.username ? String(telegramUser.username).toLowerCase() : null;
+      let telegramUserId = null;
+      let telegramUsername = null;
 
       let hasExistingRegistration = false;
       let updateMode = false;
@@ -803,6 +793,54 @@ CLASH_TEMPLATE = """
       function setStatus(text, isError = false) {
         statusEl.textContent = text;
         statusEl.style.color = isError ? "var(--error)" : "var(--ok)";
+      }
+
+      function parseUserFromQueryString(raw) {
+        if (!raw) {
+          return null;
+        }
+        try {
+          const userJson = new URLSearchParams(raw).get("user");
+          return userJson ? JSON.parse(userJson) : null;
+        } catch {
+          return null;
+        }
+      }
+
+      function parseUserFromUrl() {
+        try {
+          const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+          const searchParams = new URLSearchParams(window.location.search);
+          const tgWebAppData = hashParams.get("tgWebAppData") || searchParams.get("tgWebAppData");
+          if (tgWebAppData) {
+            const decoded = decodeURIComponent(tgWebAppData);
+            const userFromData = parseUserFromQueryString(decoded);
+            if (userFromData) {
+              return userFromData;
+            }
+          }
+          const tgWebAppUser = hashParams.get("tgWebAppUser") || searchParams.get("tgWebAppUser");
+          if (tgWebAppUser) {
+            return JSON.parse(decodeURIComponent(tgWebAppUser));
+          }
+        } catch {
+          return null;
+        }
+        return null;
+      }
+
+      function refreshTelegramIdentity() {
+        const unsafeUser = tg?.initDataUnsafe?.user || null;
+        let parsedUser = null;
+        if (!unsafeUser && tg?.initData) {
+          parsedUser = parseUserFromQueryString(tg.initData);
+        }
+        const urlUser = parseUserFromUrl();
+        const telegramUser = unsafeUser || parsedUser || urlUser || {};
+        const rawUserId = telegramUser.id ?? null;
+        const parsedUserId = rawUserId !== null ? Number.parseInt(String(rawUserId), 10) : NaN;
+        telegramUserId = Number.isFinite(parsedUserId) && parsedUserId > 0 ? parsedUserId : null;
+        telegramUsername = telegramUser.username ? String(telegramUser.username).toLowerCase() : null;
       }
 
       function ensureTelegramId() {
@@ -832,6 +870,7 @@ CLASH_TEMPLATE = """
       }
 
       async function loadExistingRegistration() {
+        refreshTelegramIdentity();
         if (!ensureTelegramId()) {
           setExistingView(false);
           syncButtonText();
@@ -927,10 +966,26 @@ CLASH_TEMPLATE = """
         setStatus("Измени данные и нажми «Сохранить изменения».");
       });
 
+      async function initRegistrationPage() {
+        refreshTelegramIdentity();
+        syncButtonText();
+        setExistingView(false);
+        await loadExistingRegistration();
+        if (telegramUserId === null) {
+          setTimeout(async () => {
+            refreshTelegramIdentity();
+            if (telegramUserId !== null) {
+              await loadExistingRegistration();
+            } else {
+              ensureTelegramId();
+            }
+          }, 900);
+        }
+      }
+
       syncButtonText();
       setExistingView(false);
-      ensureTelegramId();
-      loadExistingRegistration();
+      initRegistrationPage();
     </script>
   </body>
 </html>
