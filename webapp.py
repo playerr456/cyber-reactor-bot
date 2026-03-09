@@ -793,6 +793,18 @@ CLASH_TEMPLATE = """
         statusEl.style.color = isError ? "var(--error)" : "var(--ok)";
       }
 
+      function ensureTelegramId() {
+        if (telegramUserId === null) {
+          setStatus("Открой мини-приложение из Telegram, чтобы зарегистрироваться.", true);
+          submitBtn.disabled = true;
+          editExistingBtn.disabled = true;
+          return false;
+        }
+        submitBtn.disabled = false;
+        editExistingBtn.disabled = false;
+        return true;
+      }
+
       function syncButtonText() {
         submitBtn.textContent = updateMode ? "Сохранить изменения" : "Зарегистрироваться";
       }
@@ -808,17 +820,16 @@ CLASH_TEMPLATE = """
       }
 
       async function loadExistingRegistration() {
-        const query = new URLSearchParams();
-        if (telegramUserId !== null) {
-          query.set("telegram_user_id", String(telegramUserId));
-        }
-        if (telegramUsername) {
-          query.set("telegram_username", telegramUsername);
-        }
-        if (!query.toString()) {
+        if (!ensureTelegramId()) {
           setExistingView(false);
           syncButtonText();
           return;
+        }
+
+        const query = new URLSearchParams();
+        query.set("telegram_user_id", String(telegramUserId));
+        if (telegramUsername) {
+          query.set("telegram_username", telegramUsername);
         }
 
         try {
@@ -852,6 +863,9 @@ CLASH_TEMPLATE = """
 
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
+        if (!ensureTelegramId()) {
+          return;
+        }
 
         const payload = {
           full_name: document.getElementById("full-name").value.trim(),
@@ -903,6 +917,7 @@ CLASH_TEMPLATE = """
 
       syncButtonText();
       setExistingView(false);
+      ensureTelegramId();
       loadExistingRegistration();
     </script>
   </body>

@@ -239,7 +239,7 @@ def upsert_clash_registration(
 
     if not full_name_norm or not group_number_norm or not supercell_id_norm:
         raise ValueError("All fields are required")
-    if allow_update and telegram_user_id is None and not username_norm:
+    if telegram_user_id is None:
         raise ValueError("IDENTITY_REQUIRED")
 
     with _get_connection() as conn:
