@@ -9,6 +9,7 @@ from typing import Any
 
 ALLOWED_TOURNAMENTS = {"clash royale", "dota 2", "cs go"}
 _BLOB_PREFIX = "registrations"
+_CLASH_BLOB_PREFIX = "clash_registrations"
 
 
 def _default_db_path() -> str:
@@ -31,6 +32,12 @@ def _slug_tournament(name: str) -> str:
 
 def _unslug_tournament(name: str) -> str:
     return name.lower().replace("_", " ")
+
+
+def _slug_value(value: str) -> str:
+    cleaned = value.strip().lower().replace(" ", "_")
+    slug = re.sub(r"[^a-z0-9_\-]+", "", cleaned)
+    return slug or "unknown"
 
 
 def _extract_tournament_from_path(pathname: str) -> str | None:
@@ -69,6 +76,18 @@ def init_db() -> None:
                 username TEXT,
                 first_name TEXT,
                 tournament TEXT NOT NULL,
+                created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS clash_registrations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                full_name TEXT NOT NULL,
+                group_number TEXT NOT NULL,
+                supercell_id TEXT NOT NULL UNIQUE,
                 created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
             )
@@ -167,3 +186,49 @@ def get_registration(user_id: int) -> dict[str, Any] | None:
         ).fetchone()
 
     return dict(row) if row else None
+
+
+def upsert_clash_registration(full_name: str, group_number: str, supercell_id: str) -> None:
+    full_name_norm = full_name.strip()
+    group_number_norm = group_number.strip()
+    supercell_id_norm = supercell_id.strip().upper()
+
+    if not full_name_norm or not group_number_norm or not supercell_id_norm:
+        raise ValueError("All fields are required")
+
+    if _use_blob_backend():
+        try:
+            from vercel.blob import put
+
+            ts = int(time.time() * 1000)
+            path = f"{_CLASH_BLOB_PREFIX}/{_slug_value(supercell_id_norm)}/{ts}.json"
+            payload = {
+                "full_name": full_name_norm,
+                "group_number": group_number_norm,
+                "supercell_id": supercell_id_norm,
+                "timestamp_ms": ts,
+            }
+            put(
+                path,
+                json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+                access="private",
+                add_random_suffix=False,
+                content_type="application/json",
+            )
+            return
+        except Exception as exc:
+            raise RuntimeError(f"Vercel Blob write failed: {exc}") from exc
+
+    with _get_connection() as conn:
+        conn.execute(
+            """
+            INSERT INTO clash_registrations (full_name, group_number, supercell_id)
+            VALUES (?, ?, ?)
+            ON CONFLICT(supercell_id) DO UPDATE SET
+                full_name=excluded.full_name,
+                group_number=excluded.group_number,
+                updated_at=CURRENT_TIMESTAMP
+            """,
+            (full_name_norm, group_number_norm, supercell_id_norm),
+        )
+        conn.commit()

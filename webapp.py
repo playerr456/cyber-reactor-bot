@@ -6,7 +6,13 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from config import WEBAPP_HOST, WEBAPP_PORT
-from db import ALLOWED_TOURNAMENTS, get_registration, init_db, upsert_registration
+from db import (
+    ALLOWED_TOURNAMENTS,
+    get_registration,
+    init_db,
+    upsert_clash_registration,
+    upsert_registration,
+)
 
 
 app = FastAPI()
@@ -340,7 +346,7 @@ HTML_TEMPLATE = """
           <span class="nav-icon">GP</span>
           <span data-i18n="navHome">Главная страница</span>
         </a>
-        <a href="#top-banner" class="nav-link">
+        <a href="/clash-royale" class="nav-link">
           <span class="nav-icon">CR</span>
           <span data-i18n="navClash">CLASH ROYALE</span>
         </a>
@@ -568,6 +574,191 @@ HTML_TEMPLATE = """
 """
 
 
+CLASH_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Регистрация Clash Royale</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        --bg: #0b0f17;
+        --card: #121a27;
+        --line: rgba(255, 255, 255, 0.18);
+        --text: #ecf2ff;
+        --muted: #b9c6da;
+        --accent: #4f8cff;
+        --ok: #6ee7b7;
+        --error: #fda4af;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+        background: radial-gradient(1000px 500px at 90% -10%, #1a2942 0%, transparent 60%), var(--bg);
+        color: var(--text);
+        display: grid;
+        place-items: center;
+        padding: 18px;
+      }
+
+      .card {
+        width: min(560px, 100%);
+        border: 1px solid var(--line);
+        background: var(--card);
+        border-radius: 14px;
+        padding: 18px;
+      }
+
+      .back-link {
+        color: #9fc2ff;
+        text-decoration: none;
+        font-size: 14px;
+      }
+
+      h1 {
+        margin: 10px 0 6px;
+        font-size: clamp(28px, 5vw, 38px);
+        line-height: 1;
+      }
+
+      p {
+        margin: 0 0 14px;
+        color: var(--muted);
+      }
+
+      .form {
+        display: grid;
+        gap: 10px;
+      }
+
+      label {
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      input {
+        width: 100%;
+        border-radius: 10px;
+        border: 1px solid var(--line);
+        background: #0b1220;
+        color: var(--text);
+        padding: 10px 12px;
+        font-family: inherit;
+        font-size: 14px;
+      }
+
+      .submit-btn {
+        margin-top: 4px;
+        border-radius: 10px;
+        border: 1px solid var(--accent);
+        background: var(--accent);
+        color: #ffffff;
+        font-weight: 700;
+        padding: 11px 12px;
+        cursor: pointer;
+      }
+
+      .submit-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+
+      .status {
+        min-height: 20px;
+        margin-top: 8px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <a class="back-link" href="/">← На главную</a>
+      <h1>CLASH ROYALE</h1>
+      <p>Заполни данные для регистрации на дисциплину.</p>
+
+      <form id="clash-form" class="form">
+        <div>
+          <label for="full-name">ФИО</label>
+          <input id="full-name" name="full_name" type="text" maxlength="140" placeholder="Иванов Иван Иванович" required />
+        </div>
+        <div>
+          <label for="group-number">Номер группы</label>
+          <input id="group-number" name="group_number" type="text" maxlength="60" placeholder="БИ-22-1" required />
+        </div>
+        <div>
+          <label for="supercell-id">SUPERCELL ID</label>
+          <input id="supercell-id" name="supercell_id" type="text" maxlength="40" placeholder="#2ABCDEF9" required />
+        </div>
+        <button id="submit-btn" class="submit-btn" type="submit">Зарегистрироваться</button>
+      </form>
+
+      <div id="status" class="status"></div>
+    </main>
+
+    <script>
+      const form = document.getElementById("clash-form");
+      const submitBtn = document.getElementById("submit-btn");
+      const statusEl = document.getElementById("status");
+
+      function setStatus(text, isError = false) {
+        statusEl.textContent = text;
+        statusEl.style.color = isError ? "var(--error)" : "var(--ok)";
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const payload = {
+          full_name: document.getElementById("full-name").value.trim(),
+          group_number: document.getElementById("group-number").value.trim(),
+          supercell_id: document.getElementById("supercell-id").value.trim(),
+        };
+
+        if (!payload.full_name || !payload.group_number || !payload.supercell_id) {
+          setStatus("Заполни все поля.", true);
+          return;
+        }
+
+        submitBtn.disabled = true;
+        setStatus("Сохраняю...");
+
+        try {
+          const response = await fetch("/api/clash-royale/register", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.detail || "Ошибка регистрации");
+          }
+
+          setStatus(data.message || "Регистрация сохранена.");
+          form.reset();
+        } catch (error) {
+          setStatus(error.message || "Ошибка регистрации.", true);
+        } finally {
+          submitBtn.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>
+"""
+
+
 class RegisterRequest(BaseModel):
     user_id: int
     username: str | None = None
@@ -580,6 +771,12 @@ class FeedbackRequest(BaseModel):
     name: str | None = None
     user_id: int | None = None
     username: str | None = None
+
+
+class ClashRoyaleRegistrationRequest(BaseModel):
+    full_name: str
+    group_number: str
+    supercell_id: str
 
 
 @app.on_event("startup")
@@ -595,6 +792,11 @@ def startup() -> None:
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request) -> HTMLResponse:
     return HTMLResponse(content=HTML_TEMPLATE)
+
+
+@app.get("/clash-royale", response_class=HTMLResponse)
+async def clash_royale_page(request: Request) -> HTMLResponse:
+    return HTMLResponse(content=CLASH_TEMPLATE)
 
 
 @app.post("/api/register")
@@ -613,6 +815,34 @@ async def register(payload: RegisterRequest) -> dict[str, str]:
         tournament=tournament,
     )
     return {"message": f"Регистрация сохранена: {tournament}"}
+
+
+@app.post("/api/clash-royale/register")
+async def clash_royale_register(payload: ClashRoyaleRegistrationRequest) -> dict[str, str]:
+    if getattr(app.state, "db_error", None):
+        raise HTTPException(status_code=503, detail=f"DB is unavailable: {app.state.db_error}")
+
+    full_name = payload.full_name.strip()
+    group_number = payload.group_number.strip()
+    supercell_id = payload.supercell_id.strip().upper()
+
+    if len(full_name) < 5:
+        raise HTTPException(status_code=400, detail="Укажи корректное ФИО.")
+    if len(group_number) < 2:
+        raise HTTPException(status_code=400, detail="Укажи корректный номер группы.")
+    if len(supercell_id) < 3:
+        raise HTTPException(status_code=400, detail="Укажи корректный SUPERCELL ID.")
+
+    try:
+        upsert_clash_registration(
+            full_name=full_name,
+            group_number=group_number,
+            supercell_id=supercell_id,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    return {"message": "Регистрация на Clash Royale сохранена."}
 
 
 @app.post("/api/feedback")
