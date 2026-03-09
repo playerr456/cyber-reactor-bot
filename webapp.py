@@ -159,12 +159,27 @@ HTML_TEMPLATE = """
       }
 
       .nav-link {
-        display: block;
+        display: flex;
+        align-items: center;
+        gap: 10px;
         text-decoration: none;
         color: var(--text);
         border: 1px solid transparent;
         border-radius: 10px;
         padding: 10px 12px;
+      }
+
+      .nav-icon {
+        width: 22px;
+        height: 22px;
+        border-radius: 6px;
+        display: inline-grid;
+        place-items: center;
+        font-size: 11px;
+        font-weight: 700;
+        background: rgba(255, 255, 255, 0.15);
+        color: var(--text);
+        flex-shrink: 0;
       }
 
       .nav-link:hover,
@@ -311,7 +326,7 @@ HTML_TEMPLATE = """
     </style>
   </head>
   <body>
-    <button id="menu-toggle" class="menu-toggle" type="button" data-i18n="menuOpen">Меню</button>
+    <button id="menu-toggle" class="menu-toggle" type="button" data-i18n="menuOpen">Киберспортивные дисциплины</button>
     <button id="settings-toggle" class="settings-toggle" type="button" aria-label="Настройки">&#9881;</button>
     <div id="overlay" class="overlay"></div>
 
@@ -321,10 +336,22 @@ HTML_TEMPLATE = """
         <button id="close-menu" class="close-btn" type="button" aria-label="Закрыть">x</button>
       </div>
       <nav class="nav-list">
-        <a href="#top-banner" class="nav-link active" data-i18n="navHome">Главная страница</a>
-        <a href="#top-banner" class="nav-link" data-i18n="navClash">CLASH ROYALE</a>
-        <a href="#top-banner" class="nav-link" data-i18n="navCs2">CS2</a>
-        <a href="#top-banner" class="nav-link" data-i18n="navDota">Dota 2</a>
+        <a href="#top-banner" class="nav-link active">
+          <span class="nav-icon">GP</span>
+          <span data-i18n="navHome">Главная страница</span>
+        </a>
+        <a href="#top-banner" class="nav-link">
+          <span class="nav-icon">CR</span>
+          <span data-i18n="navClash">CLASH ROYALE</span>
+        </a>
+        <a href="#top-banner" class="nav-link">
+          <span class="nav-icon">CS</span>
+          <span data-i18n="navCs2">CS2</span>
+        </a>
+        <a href="#top-banner" class="nav-link">
+          <span class="nav-icon">D2</span>
+          <span data-i18n="navDota">Dota 2</span>
+        </a>
       </nav>
     </aside>
 
@@ -382,7 +409,7 @@ HTML_TEMPLATE = """
     <script>
       const I18N = {
         ru: {
-          menuOpen: "Меню",
+          menuOpen: "Киберспортивные дисциплины",
           sidebarTitle: "Навигация",
           settingsTitle: "Настройки",
           navHome: "Главная страница",
@@ -402,7 +429,7 @@ HTML_TEMPLATE = """
           close: "Закрыть",
         },
         en: {
-          menuOpen: "Menu",
+          menuOpen: "Esports Disciplines",
           sidebarTitle: "Navigation",
           settingsTitle: "Settings",
           navHome: "Home",
