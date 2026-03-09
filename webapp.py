@@ -583,17 +583,30 @@ CLASH_TEMPLATE = """
     <title>Регистрация Clash Royale</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Sans:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
       :root {
-        --bg: #0b0f17;
-        --card: #121a27;
-        --line: rgba(255, 255, 255, 0.18);
-        --text: #ecf2ff;
-        --muted: #b9c6da;
+        --bg: #06080c;
+        --text: #f5f7fa;
+        --panel: #10141d;
+        --panel-line: rgba(255, 255, 255, 0.16);
+        --muted: #bac6d8;
+        --link: #a8ccff;
         --accent: #4f8cff;
         --ok: #6ee7b7;
         --error: #fda4af;
+      }
+
+      body.theme-light {
+        --bg: #f3f5f9;
+        --text: #0f172a;
+        --panel: #ffffff;
+        --panel-line: rgba(15, 23, 42, 0.16);
+        --muted: #5a6678;
+        --link: #2058cc;
       }
 
       * {
@@ -604,53 +617,83 @@ CLASH_TEMPLATE = """
         margin: 0;
         min-height: 100vh;
         font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
-        background: radial-gradient(1000px 500px at 90% -10%, #1a2942 0%, transparent 60%), var(--bg);
+        background: var(--bg);
         color: var(--text);
-        display: grid;
-        place-items: center;
-        padding: 18px;
+      }
+
+      .page {
+        width: min(1100px, 100%);
+        margin: 0 auto;
+        padding: 74px 12px 28px;
       }
 
       .card {
-        width: min(560px, 100%);
-        border: 1px solid var(--line);
-        background: var(--card);
+        width: min(760px, 100%);
+        margin: 0 auto;
+        border: 1px solid var(--panel-line);
+        background: var(--panel);
         border-radius: 14px;
         padding: 18px;
       }
 
-      .back-link {
-        color: #9fc2ff;
+      .top-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .back-btn {
+        display: inline-flex;
+        align-items: center;
+        border: 1px solid var(--panel-line);
+        border-radius: 10px;
+        padding: 8px 10px;
+        color: var(--text);
         text-decoration: none;
         font-size: 14px;
+        font-weight: 700;
+      }
+
+      .game-tag {
+        border: 1px solid var(--panel-line);
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 12px;
+        color: var(--muted);
+        letter-spacing: 0.04em;
       }
 
       h1 {
-        margin: 10px 0 6px;
-        font-size: clamp(28px, 5vw, 38px);
-        line-height: 1;
+        margin: 14px 0 6px;
+        font-family: "Bebas Neue", "Arial Narrow", sans-serif;
+        font-size: clamp(38px, 8vw, 58px);
+        letter-spacing: 0.04em;
+        line-height: 0.95;
       }
 
-      p {
+      .subtitle {
         margin: 0 0 14px;
         color: var(--muted);
       }
 
       .form {
         display: grid;
-        gap: 10px;
+        gap: 12px;
       }
 
       label {
         font-size: 13px;
         color: var(--muted);
+        display: inline-block;
+        margin-bottom: 6px;
       }
 
       input {
         width: 100%;
         border-radius: 10px;
-        border: 1px solid var(--line);
-        background: #0b1220;
+        border: 1px solid var(--panel-line);
+        background: transparent;
         color: var(--text);
         padding: 10px 12px;
         font-family: inherit;
@@ -682,34 +725,43 @@ CLASH_TEMPLATE = """
     </style>
   </head>
   <body>
-    <main class="card">
-      <a class="back-link" href="/">← На главную</a>
-      <h1>CLASH ROYALE</h1>
-      <p>Заполни данные для регистрации на дисциплину.</p>
+    <main class="page">
+      <section class="card">
+        <div class="top-row">
+          <a class="back-btn" href="/">← На главную</a>
+          <span class="game-tag">CLASH ROYALE</span>
+        </div>
 
-      <form id="clash-form" class="form">
-        <div>
-          <label for="full-name">ФИО</label>
-          <input id="full-name" name="full_name" type="text" maxlength="140" placeholder="Иванов Иван Иванович" required />
-        </div>
-        <div>
-          <label for="group-number">Номер группы</label>
-          <input id="group-number" name="group_number" type="text" maxlength="60" placeholder="БИ-22-1" required />
-        </div>
-        <div>
-          <label for="supercell-id">SUPERCELL ID</label>
-          <input id="supercell-id" name="supercell_id" type="text" maxlength="40" placeholder="#2ABCDEF9" required />
-        </div>
-        <button id="submit-btn" class="submit-btn" type="submit">Зарегистрироваться</button>
-      </form>
+        <h1>Регистрация</h1>
+        <p class="subtitle">Заполни данные для регистрации на дисциплину.</p>
 
-      <div id="status" class="status"></div>
+        <form id="clash-form" class="form">
+          <div>
+            <label for="full-name">ФИО</label>
+            <input id="full-name" name="full_name" type="text" maxlength="140" placeholder="Иванов Иван Иванович" required />
+          </div>
+          <div>
+            <label for="group-number">Номер группы</label>
+            <input id="group-number" name="group_number" type="text" maxlength="60" placeholder="БИ-22-1" required />
+          </div>
+          <div>
+            <label for="supercell-id">SUPERCELL ID</label>
+            <input id="supercell-id" name="supercell_id" type="text" maxlength="40" placeholder="#2ABCDEF9" required />
+          </div>
+          <button id="submit-btn" class="submit-btn" type="submit">Зарегистрироваться</button>
+        </form>
+
+        <div id="status" class="status"></div>
+      </section>
     </main>
 
     <script>
       const form = document.getElementById("clash-form");
       const submitBtn = document.getElementById("submit-btn");
       const statusEl = document.getElementById("status");
+
+      const safeTheme = localStorage.getItem("cyber_theme") || "dark";
+      document.body.classList.toggle("theme-light", safeTheme === "light");
 
       function setStatus(text, isError = false) {
         statusEl.textContent = text;
