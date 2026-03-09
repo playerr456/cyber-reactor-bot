@@ -21,22 +21,19 @@ HTML_TEMPLATE = """
     <title>Cyber Reactor Arena</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Exo+2:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;700&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;700&display=swap" rel="stylesheet" />
     <style>
       :root {
-        --bg: #08111f;
-        --bg-soft: #102139;
-        --text: #eff6ff;
-        --text-muted: #98a8c7;
-        --line: #243751;
-        --card: #0e1b2f;
-        --accent: #36d1b1;
-        --accent-2: #ff9657;
-        --ok: #7df5d8;
-        --error: #ff9f9f;
+        --bg: #f6f8fb;
+        --surface: #ffffff;
+        --surface-soft: #f1f4f8;
+        --text: #0f172a;
+        --text-muted: #5f6b7a;
+        --line: #d7deea;
+        --accent: #1f6feb;
+        --accent-soft: #e9f1ff;
+        --ok: #0f766e;
+        --error: #b91c1c;
       }
 
       * {
@@ -46,9 +43,7 @@ HTML_TEMPLATE = """
       body {
         margin: 0;
         font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
-        background:
-          radial-gradient(1200px 600px at 65% -12%, #174778 0%, transparent 65%),
-          linear-gradient(180deg, #060c16 0%, #0b172a 48%, #08111f 100%);
+        background: var(--bg);
         color: var(--text);
         min-height: 100vh;
       }
@@ -58,20 +53,21 @@ HTML_TEMPLATE = """
         left: 16px;
         top: 16px;
         z-index: 40;
-        border: 1px solid rgba(255, 255, 255, 0.16);
-        background: rgba(10, 24, 43, 0.92);
+        border: 1px solid var(--line);
+        background: var(--surface);
         color: var(--text);
-        border-radius: 11px;
-        padding: 9px 12px;
-        font-weight: 700;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1.2;
         cursor: pointer;
-        backdrop-filter: blur(4px);
       }
 
       .overlay {
         position: fixed;
         inset: 0;
-        background: rgba(1, 6, 14, 0.68);
+        background: rgba(15, 23, 42, 0.34);
         z-index: 30;
         opacity: 0;
         pointer-events: none;
@@ -90,10 +86,10 @@ HTML_TEMPLATE = """
         bottom: 0;
         width: min(320px, 84vw);
         z-index: 50;
-        background: linear-gradient(180deg, #0d1b2e 0%, #111f34 100%);
-        border-right: 1px solid rgba(255, 255, 255, 0.08);
+        background: var(--surface);
+        border-right: 1px solid var(--line);
         transform: translateX(-100%);
-        transition: transform 0.25s ease;
+        transition: transform 0.22s ease;
         padding: 18px 12px 18px 16px;
         overflow-y: auto;
       }
@@ -111,22 +107,26 @@ HTML_TEMPLATE = """
 
       .sidebar-head h2 {
         margin: 0;
-        font-family: "Exo 2", "Segoe UI", sans-serif;
         font-size: 20px;
+        font-weight: 700;
       }
 
       .close-menu {
-        border: 0;
-        background: transparent;
-        color: #d4e5ff;
+        border: 1px solid var(--line);
+        background: var(--surface);
+        color: var(--text);
         cursor: pointer;
-        font-size: 24px;
+        font-size: 18px;
+        font-weight: 700;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
       }
 
       .channel-list {
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 4px;
       }
 
       .channel-link {
@@ -134,16 +134,17 @@ HTML_TEMPLATE = """
         align-items: center;
         gap: 10px;
         text-decoration: none;
-        color: #d6e7ff;
-        padding: 8px 8px;
+        color: var(--text);
+        padding: 9px 8px;
         border-radius: 10px;
-        transition: background 0.15s ease, transform 0.15s ease;
+        border: 1px solid transparent;
+        transition: background 0.15s ease, border-color 0.15s ease;
       }
 
       .channel-link:hover,
       .channel-link.active {
-        background: rgba(94, 156, 227, 0.14);
-        transform: translateX(2px);
+        background: var(--surface-soft);
+        border-color: var(--line);
       }
 
       .channel-icon {
@@ -155,7 +156,7 @@ HTML_TEMPLATE = """
         place-items: center;
         font-size: 12px;
         font-weight: 800;
-        color: #07111e;
+        color: #1e293b;
       }
 
       .channel-meta {
@@ -168,66 +169,43 @@ HTML_TEMPLATE = """
         font-weight: 700;
       }
 
-      .channel-preview {
-        margin: 2px 0 0;
-        color: #85b4eb;
-        font-size: 13px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
       .page {
-        width: min(1024px, 100%);
+        width: min(980px, 100%);
         margin: 0 auto;
-        padding: 78px 16px 22px;
+        padding: 78px 16px 24px;
       }
 
       .hero {
-        position: relative;
-        overflow: hidden;
-        border: 1px solid rgba(255, 255, 255, 0.12);
-        border-radius: 22px;
-        padding: 28px 22px;
-        background: linear-gradient(120deg, #12345a 0%, #184472 48%, #255f72 100%);
-      }
-
-      .hero::after {
-        content: "";
-        position: absolute;
-        right: -80px;
-        top: -80px;
-        width: 220px;
-        height: 220px;
-        border-radius: 999px;
-        background: radial-gradient(circle, rgba(255, 150, 87, 0.4) 0%, transparent 70%);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 24px 20px;
+        background: var(--surface);
       }
 
       .hero-tag {
         display: inline-block;
         font-size: 12px;
-        font-weight: 700;
-        letter-spacing: 0.06em;
+        font-weight: 600;
+        letter-spacing: 0.04em;
         text-transform: uppercase;
-        color: #ffe5d4;
-        background: rgba(8, 17, 31, 0.35);
-        border: 1px solid rgba(255, 255, 255, 0.16);
+        color: #3b82f6;
+        background: var(--accent-soft);
+        border: 1px solid #c8dbff;
         border-radius: 999px;
-        padding: 5px 10px;
+        padding: 4px 10px;
       }
 
       .hero h1 {
         margin: 12px 0 8px;
-        font-family: "Exo 2", "Segoe UI", sans-serif;
-        font-size: clamp(29px, 7vw, 44px);
-        line-height: 1.03;
-        letter-spacing: 0.01em;
+        font-size: clamp(28px, 6vw, 40px);
+        line-height: 1.08;
+        letter-spacing: 0;
         max-width: 16ch;
       }
 
       .hero p {
         margin: 0;
-        color: #d7e7ff;
+        color: var(--text-muted);
         max-width: 56ch;
       }
 
@@ -235,31 +213,30 @@ HTML_TEMPLATE = """
         margin-top: 16px;
         display: inline-block;
         border-radius: 10px;
-        border: 1px solid rgba(255, 255, 255, 0.28);
-        background: rgba(8, 17, 31, 0.34);
+        border: 1px solid var(--accent);
+        background: var(--accent);
         color: #ffffff;
         padding: 10px 14px;
         text-decoration: none;
-        font-weight: 700;
+        font-weight: 600;
       }
 
       .stack {
-        margin-top: 14px;
+        margin-top: 12px;
         display: grid;
-        gap: 14px;
+        gap: 12px;
       }
 
       .panel {
-        border-radius: 16px;
+        border-radius: 14px;
         border: 1px solid var(--line);
-        background: var(--card);
+        background: var(--surface);
         padding: 18px 16px;
       }
 
       .panel h2 {
         margin: 0;
-        font-family: "Exo 2", "Segoe UI", sans-serif;
-        font-size: 25px;
+        font-size: 24px;
       }
 
       .panel p {
@@ -270,9 +247,9 @@ HTML_TEMPLATE = """
       .meta {
         margin-bottom: 13px;
         font-size: 14px;
-        color: #d9ecff;
+        color: var(--text);
         padding: 10px 12px;
-        background: #0a1525;
+        background: var(--surface-soft);
         border: 1px solid var(--line);
         border-radius: 10px;
       }
@@ -285,10 +262,10 @@ HTML_TEMPLATE = """
 
       .tour-btn {
         text-align: left;
-        border: 1px solid #3b516f;
-        border-radius: 11px;
-        background: #13253e;
-        color: #e8f3ff;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: #ffffff;
+        color: var(--text);
         padding: 12px;
         font-size: 14px;
         font-weight: 700;
@@ -296,26 +273,35 @@ HTML_TEMPLATE = """
       }
 
       .tour-btn:hover {
-        border-color: #79c8e5;
+        border-color: #9fb6de;
       }
 
       .tour-btn.active {
         border-color: var(--accent);
-        background: #173348;
+        background: var(--accent-soft);
       }
 
       .register-btn,
       .feedback-btn {
         width: 100%;
         margin-top: 12px;
-        border: 1px solid transparent;
-        border-radius: 11px;
-        background: linear-gradient(120deg, var(--accent) 0%, #57b7ff 100%);
-        color: #051426;
+        border-radius: 10px;
         font-size: 14px;
-        font-weight: 800;
+        font-weight: 700;
         padding: 11px 12px;
         cursor: pointer;
+      }
+
+      .register-btn {
+        border: 1px solid var(--accent);
+        background: var(--accent);
+        color: #ffffff;
+      }
+
+      .feedback-btn {
+        border: 1px solid var(--line);
+        background: var(--surface-soft);
+        color: var(--text);
       }
 
       .register-btn:disabled {
@@ -338,16 +324,16 @@ HTML_TEMPLATE = """
 
       .feedback-form label {
         font-size: 13px;
-        color: #c6dbf9;
+        color: var(--text-muted);
       }
 
       .feedback-form input,
       .feedback-form textarea {
         width: 100%;
         border-radius: 10px;
-        border: 1px solid #324764;
-        background: #0a1525;
-        color: #eff6ff;
+        border: 1px solid var(--line);
+        background: #ffffff;
+        color: var(--text);
         padding: 10px 12px;
         font-family: inherit;
         font-size: 14px;
@@ -356,10 +342,6 @@ HTML_TEMPLATE = """
       .feedback-form textarea {
         min-height: 120px;
         resize: vertical;
-      }
-
-      .feedback-btn {
-        background: linear-gradient(120deg, var(--accent-2) 0%, #ffd062 100%);
       }
 
       @media (min-width: 880px) {
