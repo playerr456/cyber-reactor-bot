@@ -225,14 +225,6 @@ HTML_TEMPLATE = """
         display: block;
       }
 
-      .carousel::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-        background: linear-gradient(180deg, transparent 0%, rgba(6, 8, 12, 0.35) 70%, var(--bg) 100%);
-      }
-
       .dots {
         position: absolute;
         left: 50%;
@@ -330,9 +322,9 @@ HTML_TEMPLATE = """
       </div>
       <nav class="nav-list">
         <a href="#top-banner" class="nav-link active" data-i18n="navHome">Главная страница</a>
-        <a href="#top-banner" class="nav-link" data-i18n="navBanner">Баннеры</a>
-        <a href="#brand" class="nav-link" data-i18n="navLogo">Лого</a>
-        <a href="#contacts" class="nav-link" data-i18n="navFeedback">Обратная связь</a>
+        <a href="#top-banner" class="nav-link" data-i18n="navClash">CLASH ROYALE</a>
+        <a href="#top-banner" class="nav-link" data-i18n="navCs2">CS2</a>
+        <a href="#top-banner" class="nav-link" data-i18n="navDota">Dota 2</a>
       </nav>
     </aside>
 
@@ -394,9 +386,9 @@ HTML_TEMPLATE = """
           sidebarTitle: "Навигация",
           settingsTitle: "Настройки",
           navHome: "Главная страница",
-          navBanner: "Баннеры",
-          navLogo: "Лого",
-          navFeedback: "Обратная связь",
+          navClash: "CLASH ROYALE",
+          navCs2: "CS2",
+          navDota: "Dota 2",
           languageLabel: "Язык",
           themeLabel: "Тема",
           langRu: "Русский",
@@ -414,9 +406,9 @@ HTML_TEMPLATE = """
           sidebarTitle: "Navigation",
           settingsTitle: "Settings",
           navHome: "Home",
-          navBanner: "Banners",
-          navLogo: "Logo",
-          navFeedback: "Feedback",
+          navClash: "CLASH ROYALE",
+          navCs2: "CS2",
+          navDota: "Dota 2",
           languageLabel: "Language",
           themeLabel: "Theme",
           langRu: "Russian",
