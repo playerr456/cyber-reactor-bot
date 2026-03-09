@@ -80,6 +80,7 @@ def init_db() -> None:
                 full_name TEXT NOT NULL,
                 group_number TEXT NOT NULL,
                 supercell_id TEXT NOT NULL UNIQUE,
+                telegram_user_id INTEGER UNIQUE,
                 telegram_username TEXT UNIQUE,
                 created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -87,9 +88,12 @@ def init_db() -> None:
             """
         )
         columns = {row["name"] for row in conn.execute("PRAGMA table_info(clash_registrations)").fetchall()}
+        if "telegram_user_id" not in columns:
+            conn.execute("ALTER TABLE clash_registrations ADD COLUMN telegram_user_id INTEGER")
         if "telegram_username" not in columns:
             conn.execute("ALTER TABLE clash_registrations ADD COLUMN telegram_username TEXT")
         conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS ux_clash_supercell_id ON clash_registrations(supercell_id)")
+        conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS ux_clash_user_id ON clash_registrations(telegram_user_id)")
         conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS ux_clash_username ON clash_registrations(telegram_username)")
         conn.commit()
 
@@ -186,28 +190,45 @@ def get_registration(user_id: int) -> dict[str, Any] | None:
     return dict(row) if row else None
 
 
-def get_clash_registration_by_username(telegram_username: str) -> dict[str, Any] | None:
-    username_norm = telegram_username.strip().lower().lstrip("@")
-    if not username_norm:
-        return None
+def get_clash_registration(
+    telegram_user_id: int | None = None,
+    telegram_username: str | None = None,
+) -> dict[str, Any] | None:
+    username_norm = telegram_username.strip().lower().lstrip("@") if telegram_username else None
 
     with _get_connection() as conn:
-        row = conn.execute(
-            """
-            SELECT full_name, group_number, supercell_id, telegram_username, created_at, updated_at
-            FROM clash_registrations
-            WHERE telegram_username = ?
-            """,
-            (username_norm,),
-        ).fetchone()
+        if telegram_user_id is not None:
+            row = conn.execute(
+                """
+                SELECT full_name, group_number, supercell_id, telegram_user_id, telegram_username, created_at, updated_at
+                FROM clash_registrations
+                WHERE telegram_user_id = ?
+                """,
+                (telegram_user_id,),
+            ).fetchone()
+            if row:
+                return dict(row)
 
-    return dict(row) if row else None
+        if username_norm:
+            row = conn.execute(
+                """
+                SELECT full_name, group_number, supercell_id, telegram_user_id, telegram_username, created_at, updated_at
+                FROM clash_registrations
+                WHERE telegram_username = ?
+                """,
+                (username_norm,),
+            ).fetchone()
+            if row:
+                return dict(row)
+
+    return None
 
 
 def upsert_clash_registration(
     full_name: str,
     group_number: str,
     supercell_id: str,
+    telegram_user_id: int | None = None,
     telegram_username: str | None = None,
     allow_update: bool = False,
 ) -> str:
@@ -218,25 +239,22 @@ def upsert_clash_registration(
 
     if not full_name_norm or not group_number_norm or not supercell_id_norm:
         raise ValueError("All fields are required")
+    if allow_update and telegram_user_id is None and not username_norm:
+        raise ValueError("IDENTITY_REQUIRED")
 
     with _get_connection() as conn:
-        existing_by_supercell = conn.execute(
-            """
-            SELECT telegram_username
-            FROM clash_registrations
-            WHERE supercell_id = ?
-            """,
-            (supercell_id_norm,),
-        ).fetchone()
-
-        if existing_by_supercell:
-            owner_username = existing_by_supercell["telegram_username"]
-            if owner_username != username_norm:
-                raise ValueError("SUPERCELL_ID_ALREADY_USED")
-
-        existing_by_username = None
-        if username_norm:
-            existing_by_username = conn.execute(
+        existing_by_identity = None
+        if telegram_user_id is not None:
+            existing_by_identity = conn.execute(
+                """
+                SELECT id
+                FROM clash_registrations
+                WHERE telegram_user_id = ?
+                """,
+                (telegram_user_id,),
+            ).fetchone()
+        if not existing_by_identity and username_norm:
+            existing_by_identity = conn.execute(
                 """
                 SELECT id
                 FROM clash_registrations
@@ -245,17 +263,50 @@ def upsert_clash_registration(
                 (username_norm,),
             ).fetchone()
 
-        if existing_by_username:
+        existing_by_supercell = conn.execute(
+            """
+            SELECT id, telegram_user_id, telegram_username
+            FROM clash_registrations
+            WHERE supercell_id = ?
+            """,
+            (supercell_id_norm,),
+        ).fetchone()
+
+        if existing_by_supercell:
+            is_same_owner = False
+            if telegram_user_id is not None and existing_by_supercell["telegram_user_id"] == telegram_user_id:
+                is_same_owner = True
+            if username_norm and existing_by_supercell["telegram_username"] == username_norm:
+                is_same_owner = True
+            if existing_by_identity and existing_by_identity["id"] == existing_by_supercell["id"]:
+                is_same_owner = True
+
+            if not is_same_owner:
+                raise ValueError("SUPERCELL_ID_ALREADY_USED")
+
+        if existing_by_identity:
             if not allow_update:
-                raise ValueError("USERNAME_ALREADY_REGISTERED")
+                raise ValueError("USER_ALREADY_REGISTERED")
 
             conn.execute(
                 """
                 UPDATE clash_registrations
-                SET full_name = ?, group_number = ?, supercell_id = ?, updated_at = CURRENT_TIMESTAMP
-                WHERE telegram_username = ?
+                SET full_name = ?,
+                    group_number = ?,
+                    supercell_id = ?,
+                    telegram_user_id = COALESCE(?, telegram_user_id),
+                    telegram_username = COALESCE(?, telegram_username),
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
                 """,
-                (full_name_norm, group_number_norm, supercell_id_norm, username_norm),
+                (
+                    full_name_norm,
+                    group_number_norm,
+                    supercell_id_norm,
+                    telegram_user_id,
+                    username_norm,
+                    existing_by_identity["id"],
+                ),
             )
             conn.commit()
             return "updated"
@@ -265,10 +316,16 @@ def upsert_clash_registration(
 
         conn.execute(
             """
-            INSERT INTO clash_registrations (full_name, group_number, supercell_id, telegram_username)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO clash_registrations (
+                full_name,
+                group_number,
+                supercell_id,
+                telegram_user_id,
+                telegram_username
+            )
+            VALUES (?, ?, ?, ?, ?)
             """,
-            (full_name_norm, group_number_norm, supercell_id_norm, username_norm),
+            (full_name_norm, group_number_norm, supercell_id_norm, telegram_user_id, username_norm),
         )
         conn.commit()
         return "created"
