@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from config import WEBAPP_HOST, WEBAPP_PORT
 from db import (
     ALLOWED_TOURNAMENTS,
+    get_clash_registration_by_username,
     get_registration,
     init_db,
     upsert_clash_registration,
@@ -722,7 +723,15 @@ CLASH_TEMPLATE = """
         font-size: 13px;
         color: var(--muted);
       }
+
+      .hint {
+        margin-top: -6px;
+        margin-bottom: 12px;
+        font-size: 13px;
+        color: var(--muted);
+      }
     </style>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
   </head>
   <body>
     <main class="page">
@@ -734,6 +743,7 @@ CLASH_TEMPLATE = """
 
         <h1>Регистрация</h1>
         <p class="subtitle">Заполни данные для регистрации на дисциплину.</p>
+        <p class="hint">Telegram username: <span id="telegram-username">не определен</span></p>
 
         <form id="clash-form" class="form">
           <div>
@@ -756,9 +766,18 @@ CLASH_TEMPLATE = """
     </main>
 
     <script>
+      const tg = window.Telegram?.WebApp;
+      if (tg) tg.expand();
+
       const form = document.getElementById("clash-form");
       const submitBtn = document.getElementById("submit-btn");
       const statusEl = document.getElementById("status");
+      const usernameEl = document.getElementById("telegram-username");
+      const telegramUser = tg?.initDataUnsafe?.user || {};
+      const telegramUsername = telegramUser.username ? telegramUser.username.toLowerCase() : null;
+
+      let hasExistingRegistration = false;
+      let updateMode = false;
 
       const safeTheme = localStorage.getItem("cyber_theme") || "dark";
       document.body.classList.toggle("theme-light", safeTheme === "light");
@@ -768,13 +787,62 @@ CLASH_TEMPLATE = """
         statusEl.style.color = isError ? "var(--error)" : "var(--ok)";
       }
 
+      function syncButtonText() {
+        if (!hasExistingRegistration) {
+          submitBtn.textContent = "Зарегистрироваться";
+          return;
+        }
+        submitBtn.textContent = updateMode ? "Сохранить изменения" : "Изменить данные в регистрации";
+      }
+
+      async function loadExistingRegistration() {
+        usernameEl.textContent = telegramUsername ? `@${telegramUsername}` : "не определен";
+        if (!telegramUsername) {
+          syncButtonText();
+          return;
+        }
+
+        try {
+          const response = await fetch(`/api/clash-royale/registration/${encodeURIComponent(telegramUsername)}`);
+          if (!response.ok) {
+            syncButtonText();
+            return;
+          }
+
+          const data = await response.json();
+          if (!data.registration) {
+            syncButtonText();
+            return;
+          }
+
+          document.getElementById("full-name").value = data.registration.full_name || "";
+          document.getElementById("group-number").value = data.registration.group_number || "";
+          document.getElementById("supercell-id").value = data.registration.supercell_id || "";
+          hasExistingRegistration = true;
+          updateMode = false;
+          syncButtonText();
+          setStatus("Ты уже зарегистрирован. Нажми кнопку ниже, чтобы изменить данные.");
+        } catch {
+          syncButtonText();
+        }
+      }
+
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
+
+        if (hasExistingRegistration && !updateMode) {
+          updateMode = true;
+          syncButtonText();
+          setStatus("Теперь можно изменить данные и сохранить.");
+          return;
+        }
 
         const payload = {
           full_name: document.getElementById("full-name").value.trim(),
           group_number: document.getElementById("group-number").value.trim(),
           supercell_id: document.getElementById("supercell-id").value.trim(),
+          telegram_username: telegramUsername,
+          allow_update: updateMode,
         };
 
         if (!payload.full_name || !payload.group_number || !payload.supercell_id) {
@@ -798,13 +866,18 @@ CLASH_TEMPLATE = """
           }
 
           setStatus(data.message || "Регистрация сохранена.");
-          form.reset();
+          hasExistingRegistration = true;
+          updateMode = false;
+          syncButtonText();
         } catch (error) {
           setStatus(error.message || "Ошибка регистрации.", true);
         } finally {
           submitBtn.disabled = false;
         }
       });
+
+      syncButtonText();
+      loadExistingRegistration();
     </script>
   </body>
 </html>
@@ -829,6 +902,8 @@ class ClashRoyaleRegistrationRequest(BaseModel):
     full_name: str
     group_number: str
     supercell_id: str
+    telegram_username: str | None = None
+    allow_update: bool = False
 
 
 @app.on_event("startup")
@@ -849,6 +924,15 @@ async def index(request: Request) -> HTMLResponse:
 @app.get("/clash-royale", response_class=HTMLResponse)
 async def clash_royale_page(request: Request) -> HTMLResponse:
     return HTMLResponse(content=CLASH_TEMPLATE)
+
+
+@app.get("/api/clash-royale/registration/{telegram_username}")
+async def clash_royale_registration(telegram_username: str) -> dict[str, object]:
+    if getattr(app.state, "db_error", None):
+        raise HTTPException(status_code=503, detail=f"DB is unavailable: {app.state.db_error}")
+
+    data = get_clash_registration_by_username(telegram_username)
+    return {"registration": data}
 
 
 @app.post("/api/register")
@@ -877,6 +961,7 @@ async def clash_royale_register(payload: ClashRoyaleRegistrationRequest) -> dict
     full_name = payload.full_name.strip()
     group_number = payload.group_number.strip()
     supercell_id = payload.supercell_id.strip().upper()
+    telegram_username = payload.telegram_username.strip() if payload.telegram_username else None
 
     if len(full_name) < 5:
         raise HTTPException(status_code=400, detail="Укажи корректное ФИО.")
@@ -886,15 +971,28 @@ async def clash_royale_register(payload: ClashRoyaleRegistrationRequest) -> dict
         raise HTTPException(status_code=400, detail="Укажи корректный SUPERCELL ID.")
 
     try:
-        upsert_clash_registration(
+        action = upsert_clash_registration(
             full_name=full_name,
             group_number=group_number,
             supercell_id=supercell_id,
+            telegram_username=telegram_username,
+            allow_update=payload.allow_update,
         )
     except ValueError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
+        code = str(exc)
+        if code == "SUPERCELL_ID_ALREADY_USED":
+            raise HTTPException(status_code=409, detail="Этот SUPERCELL ID уже занят другим игроком.") from exc
+        if code == "USERNAME_ALREADY_REGISTERED":
+            raise HTTPException(
+                status_code=409,
+                detail="Ты уже зарегистрирован. Нажми кнопку «Изменить данные в регистрации».",
+            ) from exc
+        if code == "REGISTRATION_NOT_FOUND":
+            raise HTTPException(status_code=404, detail="Регистрация для этого username не найдена.") from exc
+        raise HTTPException(status_code=400, detail=code) from exc
 
-    return {"message": "Регистрация на Clash Royale сохранена."}
+    message = "Данные регистрации обновлены." if action == "updated" else "Регистрация на Clash Royale сохранена."
+    return {"message": message}
 
 
 @app.post("/api/feedback")
