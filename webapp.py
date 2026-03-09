@@ -449,6 +449,12 @@ HTML_TEMPLATE = """
 
       <nav class="channel-list">
         <a href="#banner" class="channel-link active">
+          <span class="channel-icon" style="background:#b9ccff">GP</span>
+          <div class="channel-meta">
+            <p class="channel-title">Главная страница</p>
+          </div>
+        </a>
+        <a href="#banner" class="channel-link">
           <span class="channel-icon" style="background:#ffb637">CS</span>
           <div class="channel-meta">
             <p class="channel-title">CS2</p>
@@ -482,24 +488,6 @@ HTML_TEMPLATE = """
           <span class="channel-icon" style="background:#ff6568">D2</span>
           <div class="channel-meta">
             <p class="channel-title">Dota 2</p>
-          </div>
-        </a>
-        <a href="#feedback" class="channel-link">
-          <span class="channel-icon" style="background:#ff964d">MT</span>
-          <div class="channel-meta">
-            <p class="channel-title">Мир Танков</p>
-          </div>
-        </a>
-        <a href="#feedback" class="channel-link">
-          <span class="channel-icon" style="background:#8ab4d8">CH</span>
-          <div class="channel-meta">
-            <p class="channel-title">Общий чат</p>
-          </div>
-        </a>
-        <a href="#feedback" class="channel-link">
-          <span class="channel-icon" style="background:#ffd367">T</span>
-          <div class="channel-meta">
-            <p class="channel-title">Tekken</p>
           </div>
         </a>
       </nav>
