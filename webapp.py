@@ -778,9 +778,21 @@ CLASH_TEMPLATE = """
       const statusEl = document.getElementById("status");
       const existingActionEl = document.getElementById("existing-action");
       const editExistingBtn = document.getElementById("edit-existing-btn");
-      const telegramUser = tg?.initDataUnsafe?.user || {};
-      const telegramUserId = Number.isInteger(telegramUser.id) ? telegramUser.id : null;
-      const telegramUsername = telegramUser.username ? telegramUser.username.toLowerCase() : null;
+      const unsafeUser = tg?.initDataUnsafe?.user || null;
+      let parsedUser = null;
+      if (!unsafeUser && tg?.initData) {
+        try {
+          const rawUser = new URLSearchParams(tg.initData).get("user");
+          parsedUser = rawUser ? JSON.parse(rawUser) : null;
+        } catch {
+          parsedUser = null;
+        }
+      }
+      const telegramUser = unsafeUser || parsedUser || {};
+      const rawTelegramUserId = telegramUser.id ?? null;
+      const parsedTelegramUserId = rawTelegramUserId !== null ? Number.parseInt(String(rawTelegramUserId), 10) : NaN;
+      const telegramUserId = Number.isFinite(parsedTelegramUserId) && parsedTelegramUserId > 0 ? parsedTelegramUserId : null;
+      const telegramUsername = telegramUser.username ? String(telegramUser.username).toLowerCase() : null;
 
       let hasExistingRegistration = false;
       let updateMode = false;
