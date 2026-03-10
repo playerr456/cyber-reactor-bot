@@ -29,30 +29,21 @@ HTML_TEMPLATE = """
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>КиберРеаткор</title>
+    <title>КиберРеактор</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Sans:wght@400;500;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;700;800&display=swap"
       rel="stylesheet"
     />
     <style>
       :root {
-        --bg: #06080c;
-        --text: #f5f7fa;
-        --panel: #10141d;
-        --panel-line: rgba(255, 255, 255, 0.16);
-        --muted: #bac6d8;
-        --link: #a8ccff;
-      }
-
-      body.theme-light {
-        --bg: #f3f5f9;
-        --text: #0f172a;
-        --panel: #ffffff;
-        --panel-line: rgba(15, 23, 42, 0.16);
-        --muted: #5a6678;
-        --link: #2058cc;
+        --bg: #1f2024;
+        --phone: #efefef;
+        --panel: #3f4045;
+        --card: #d8d8d8;
+        --text: #101010;
+        --muted: #595959;
       }
 
       * {
@@ -61,587 +52,598 @@ HTML_TEMPLATE = """
 
       body {
         margin: 0;
+        min-height: 100vh;
         font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
         background: var(--bg);
         color: var(--text);
+      }
+
+      .app-shell {
+        width: 100%;
         min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 16px;
       }
 
-      .menu-toggle,
-      .settings-toggle {
-        position: fixed;
-        top: 14px;
-        z-index: 40;
-        border: 1px solid var(--panel-line);
-        background: var(--panel);
-        color: var(--text);
-        border-radius: 10px;
-        cursor: pointer;
+      .frame {
+        width: min(390px, calc(100vw - 20px));
       }
 
-      .menu-toggle {
-        left: 14px;
-        padding: 10px 12px;
-        font-size: 14px;
-        font-weight: 700;
+      .frame-title {
+        margin: 0 0 8px;
+        color: #86888d;
+        font-size: 33px;
+        line-height: 1;
+        font-weight: 500;
       }
 
-      .settings-toggle {
-        right: 14px;
-        width: 42px;
-        height: 42px;
-        font-size: 20px;
+      .phone {
+        position: relative;
+        width: 100%;
+        min-height: 640px;
+        background: var(--phone);
+        overflow: hidden;
       }
 
-      .overlay {
-        position: fixed;
+      .menu-backdrop {
+        position: absolute;
         inset: 0;
-        background: rgba(0, 0, 0, 0.42);
-        z-index: 30;
+        background: rgba(0, 0, 0, 0.24);
         opacity: 0;
         pointer-events: none;
         transition: opacity 0.2s ease;
+        z-index: 25;
       }
 
-      .overlay.visible {
+      .menu-backdrop.open {
         opacity: 1;
         pointer-events: auto;
       }
 
-      .sidebar,
-      .settings-panel {
-        position: fixed;
+      .menu-panel {
+        position: absolute;
+        left: 0;
         top: 0;
         bottom: 0;
-        width: min(340px, 84vw);
+        width: min(250px, 72vw);
         background: var(--panel);
-        z-index: 50;
-        padding: 16px 14px;
-        transition: transform 0.22s ease;
-      }
-
-      .sidebar {
-        left: 0;
-        border-right: 1px solid var(--panel-line);
+        padding: 18px 14px;
         transform: translateX(-100%);
+        transition: transform 0.2s ease;
+        z-index: 30;
       }
 
-      .settings-panel {
-        right: 0;
-        border-left: 1px solid var(--panel-line);
-        transform: translateX(100%);
-      }
-
-      .sidebar.open,
-      .settings-panel.open {
+      .menu-panel.open {
         transform: translateX(0);
       }
 
-      .panel-head {
+      .menu-head {
         display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 12px;
+        justify-content: flex-start;
       }
 
-      .panel-head h2 {
-        margin: 0;
-        font-size: 20px;
-      }
-
-      .close-btn {
-        width: 34px;
-        height: 34px;
-        border-radius: 8px;
-        border: 1px solid var(--panel-line);
-        background: transparent;
-        color: var(--text);
-        font-size: 18px;
-        cursor: pointer;
-      }
-
-      .nav-list {
-        display: grid;
-        gap: 6px;
-      }
-
-      .nav-link {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        text-decoration: none;
-        color: var(--text);
-        border: 1px solid transparent;
-        border-radius: 10px;
-        padding: 10px 12px;
-      }
-
-      .nav-icon {
-        width: 22px;
-        height: 22px;
-        border-radius: 6px;
+      .menu-btn,
+      .menu-btn-fake {
+        width: 42px;
+        height: 42px;
+        border-radius: 11px;
+        border: 0;
+        background: #dcdcdc;
         display: inline-grid;
         place-items: center;
-        font-size: 11px;
-        font-weight: 700;
-        background: rgba(255, 255, 255, 0.15);
-        color: var(--text);
+        cursor: pointer;
         flex-shrink: 0;
       }
 
-      .nav-link:hover,
-      .nav-link.active {
-        border-color: var(--panel-line);
+      .menu-btn-fake {
+        cursor: default;
       }
 
-      .setting-group {
-        display: grid;
-        gap: 6px;
-        margin-bottom: 12px;
+      .menu-lines,
+      .menu-lines::before,
+      .menu-lines::after {
+        display: block;
+        width: 17px;
+        height: 2px;
+        background: #787878;
+        border-radius: 999px;
+        content: "";
       }
 
-      .setting-group label {
-        color: var(--muted);
-        font-size: 13px;
-      }
-
-      .setting-group select {
-        border-radius: 10px;
-        border: 1px solid var(--panel-line);
-        background: transparent;
-        color: var(--text);
-        padding: 10px;
-        font-family: inherit;
-      }
-
-      .page {
-        width: min(1100px, 100%);
-        margin: 0 auto;
-        padding: 72px 0 28px;
-      }
-
-      .carousel {
+      .menu-lines {
         position: relative;
-        overflow: hidden;
-        width: 100%;
-        height: min(54vw, 460px);
-        min-height: 260px;
-        border-bottom: 1px solid var(--panel-line);
       }
 
-      .slide {
+      .menu-lines::before {
         position: absolute;
-        inset: 0;
-        opacity: 0;
-        transition: opacity 0.65s ease;
+        top: -5px;
       }
 
-      .slide.active {
-        opacity: 1;
+      .menu-lines::after {
+        position: absolute;
+        top: 5px;
       }
 
-      .slide img {
-        width: 100%;
-        height: 100%;
+      .menu-nav {
+        margin-top: 18px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .menu-link {
+        border: 0;
+        border-radius: 10px;
+        background: #e2e2e2;
+        color: #1e1e1e;
+        font-family: inherit;
+        font-size: 30px;
+        font-weight: 500;
+        line-height: 1;
+        padding: 11px 12px;
+        cursor: pointer;
+      }
+
+      .topbar {
+        height: 74px;
+        background: #f7f7f7;
+        display: flex;
+        align-items: center;
+        padding: 0 12px;
+      }
+
+      .topbar .menu-btn {
+        z-index: 10;
+      }
+
+      .brand-logo {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
         object-fit: cover;
+        margin: 0 auto;
+        border: 2px solid #0d0d0d;
+      }
+
+      .topbar-spacer {
+        width: 42px;
+        flex-shrink: 0;
+      }
+
+      .screen-wrap {
+        padding: 14px 10px 16px;
+      }
+
+      .screen {
+        display: none;
+      }
+
+      .screen.active {
         display: block;
       }
 
-      .dots {
-        position: absolute;
-        left: 50%;
-        bottom: 14px;
-        transform: translateX(-50%);
-        display: flex;
-        gap: 8px;
-        z-index: 2;
-      }
-
-      .dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 999px;
-        border: 0;
-        cursor: pointer;
-        background: rgba(255, 255, 255, 0.45);
-      }
-
-      .dot.active {
-        background: #ffffff;
-      }
-
-      .brand {
+      .banner-placeholder {
+        height: 220px;
+        width: 100%;
+        background: #cdcdcd;
         display: grid;
-        justify-items: center;
-        gap: 12px;
-        padding: 22px 16px 4px;
+        place-items: center;
+        font-size: 35px;
+        letter-spacing: 0.03em;
+        color: #252525;
+        margin-bottom: 14px;
       }
 
-      .brand h1 {
+      .game-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .game-card {
+        border-radius: 8px;
+        border: 0;
+        background: var(--card);
+        min-height: 74px;
+        padding: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+      }
+
+      .game-card.actionable {
+        cursor: pointer;
+      }
+
+      .game-card.empty {
+        min-height: 62px;
+      }
+
+      .game-logo {
+        width: 40px;
+        height: 40px;
+        border-radius: 9px;
+        border: 2px solid #111;
+        display: grid;
+        place-items: center;
+        background: #fafafa;
+        font-size: 13px;
+        font-weight: 800;
+        flex-shrink: 0;
+      }
+
+      .game-logo.gold {
+        background: #d9cc9f;
+        border-color: #bba96e;
+      }
+
+      .game-name {
+        font-size: 37px;
+        line-height: 0.92;
+        font-weight: 800;
+        text-align: left;
+      }
+
+      .game-name.small {
+        font-size: 30px;
+      }
+
+      .center-pill {
+        margin: 108px auto 0;
+        width: min(180px, 70%);
+        background: var(--card);
+        border-radius: 10px;
+        padding: 14px 10px;
+        font-size: 37px;
+        line-height: 1;
+        text-align: center;
+        font-weight: 800;
+      }
+
+      .team-title {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+
+      .team-title h2 {
         margin: 0;
-        font-family: "Bebas Neue", "Arial Narrow", sans-serif;
-        font-size: clamp(52px, 12vw, 96px);
-        letter-spacing: 0.04em;
-        line-height: 0.95;
+        font-size: 40px;
+        line-height: 1;
       }
 
-      .logo {
-        width: min(240px, 58vw);
-        aspect-ratio: 1 / 1;
-        object-fit: cover;
+      .player-list {
+        display: grid;
+        gap: 8px;
+      }
+
+      .player-card {
+        position: relative;
+        border-radius: 16px;
+        border: 0;
+        background: var(--card);
+        min-height: 118px;
+        padding: 12px 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+      }
+
+      .player-card.static {
+        cursor: default;
+      }
+
+      .player-names {
+        display: grid;
+        gap: 2px;
+      }
+
+      .player-first {
+        margin: 0;
+        font-size: 30px;
+        line-height: 1;
+        font-weight: 700;
+      }
+
+      .player-nick {
+        margin: 0;
+        font-size: 47px;
+        line-height: 0.94;
+        font-weight: 800;
+      }
+
+      .player-last {
+        margin: 0;
+        font-size: 30px;
+        line-height: 1;
+        font-weight: 700;
+      }
+
+      .photo-placeholder {
+        width: 116px;
+        height: 96px;
         border-radius: 14px;
-        border: 1px solid var(--panel-line);
+        background: linear-gradient(145deg, #c2c2c2, #e9e9e9);
+        color: #676767;
+        font-size: 18px;
+        display: grid;
+        place-items: center;
+        text-align: center;
+        flex-shrink: 0;
       }
 
-      .contacts {
-        margin: 22px auto 0;
-        width: min(680px, calc(100% - 24px));
-        border-radius: 14px;
-        border: 1px solid var(--panel-line);
-        background: var(--panel);
-        padding: 16px 16px 18px;
+      .captain {
+        position: absolute;
+        right: 9px;
+        top: 9px;
+        width: 23px;
+        height: 23px;
+        border-radius: 50%;
+        background: #f1c400;
+        color: #121212;
+        font-size: 16px;
+        font-weight: 800;
+        display: grid;
+        place-items: center;
       }
 
-      .contacts h2 {
-        margin: 0 0 10px;
+      .player-info {
+        margin-top: 14px;
+      }
+
+      .player-info p {
+        margin: 0 0 8px;
         font-size: 26px;
+        line-height: 1.2;
+        font-weight: 600;
       }
 
-      .contacts p {
-        margin: 5px 0;
-        font-size: 17px;
+      .achievements-card {
+        margin-top: 70px;
+        border-radius: 12px;
+        background: var(--card);
+        padding: 22px 14px;
+        text-align: center;
+        font-size: 33px;
+        line-height: 1;
+        font-weight: 700;
       }
 
-      .contacts a {
-        color: var(--link);
-        text-decoration: none;
-      }
-
-      @media (max-width: 680px) {
-        .carousel {
-          min-height: 220px;
-        }
-
-        .contacts h2 {
+      @media (max-width: 420px) {
+        .frame-title {
           font-size: 22px;
         }
 
-        .contacts p {
-          font-size: 16px;
+        .menu-link {
+          font-size: 24px;
+        }
+
+        .game-name {
+          font-size: 30px;
+        }
+
+        .game-name.small {
+          font-size: 24px;
+        }
+
+        .center-pill {
+          font-size: 31px;
+        }
+
+        .team-title h2 {
+          font-size: 34px;
+        }
+
+        .player-first,
+        .player-last,
+        .player-info p {
+          font-size: 22px;
+        }
+
+        .player-nick {
+          font-size: 35px;
+        }
+
+        .photo-placeholder {
+          width: 92px;
+          height: 78px;
+          font-size: 14px;
         }
       }
     </style>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
   </head>
   <body>
-    <button id="menu-toggle" class="menu-toggle" type="button" data-i18n="menuOpen">Киберспортивные дисциплины</button>
-    <button id="settings-toggle" class="settings-toggle" type="button" aria-label="Настройки">&#9881;</button>
-    <div id="overlay" class="overlay"></div>
+    <div class="app-shell">
+      <div class="frame">
+        <p id="frame-title" class="frame-title">ДомСтр М</p>
+        <section class="phone">
+          <div id="menu-backdrop" class="menu-backdrop"></div>
+          <aside id="menu-panel" class="menu-panel" aria-hidden="true">
+            <div class="menu-head">
+              <div class="menu-btn-fake"><span class="menu-lines"></span></div>
+            </div>
+            <nav class="menu-nav">
+              <button type="button" class="menu-link" data-screen-target="teams">Сборные</button>
+              <button type="button" class="menu-link" data-screen-target="tournaments">Турниры</button>
+              <button type="button" class="menu-link" data-screen-target="achievements">Достижения</button>
+            </nav>
+          </aside>
 
-    <aside id="sidebar" class="sidebar" aria-hidden="true">
-      <div class="panel-head">
-        <h2 data-i18n="sidebarTitle">Навигация</h2>
-        <button id="close-menu" class="close-btn" type="button" aria-label="Закрыть">x</button>
+          <header class="topbar">
+            <button id="menu-btn" class="menu-btn" type="button" aria-label="Открыть меню">
+              <span class="menu-lines"></span>
+            </button>
+            <img class="brand-logo" src="/assets/reactor-logo.jpg" alt="Логотип" />
+            <div class="topbar-spacer"></div>
+          </header>
+
+          <main class="screen-wrap">
+            <section class="screen active" data-screen="home">
+              <div class="banner-placeholder">БАННЕРЫ</div>
+            </section>
+
+            <section class="screen" data-screen="teams">
+              <div class="game-grid">
+                <div class="game-card actionable" data-go-screen="team-mt">
+                  <div class="game-logo">MT</div>
+                  <div class="game-name">МИР ТАНКОВ</div>
+                </div>
+                <div class="game-card">
+                  <div class="game-logo gold">ML</div>
+                  <div class="game-name small">MOBILE LEGENDS</div>
+                </div>
+                <div class="game-card">
+                  <div class="game-name small">COUNTER STRIKE 2</div>
+                </div>
+                <div class="game-card">
+                  <div class="game-name small">DOTA 2</div>
+                </div>
+                <div class="game-card empty"></div>
+                <div class="game-card empty"></div>
+              </div>
+            </section>
+
+            <section class="screen" data-screen="tournaments">
+              <div class="center-pill">ПОБЕДА</div>
+            </section>
+
+            <section class="screen" data-screen="achievements">
+              <div class="achievements-card">Блок достижений</div>
+            </section>
+
+            <section class="screen" data-screen="team-mt">
+              <div class="team-title">
+                <div class="game-logo">MT</div>
+                <h2>МИР ТАНКОВ</h2>
+              </div>
+              <div class="player-list">
+                <div class="player-card" data-go-screen="player-1">
+                  <div class="player-names">
+                    <p class="player-first">Сергей</p>
+                    <p class="player-nick">SAM_05_2</p>
+                    <p class="player-last">Грачев</p>
+                  </div>
+                  <div class="photo-placeholder">Фото игрока позже</div>
+                  <span class="captain">К</span>
+                </div>
+                <div class="player-card static">
+                  <div class="player-names">
+                    <p class="player-first">Денис</p>
+                    <p class="player-nick">EgorTitov9</p>
+                    <p class="player-last">Машуков</p>
+                  </div>
+                  <div class="photo-placeholder">Фото игрока позже</div>
+                </div>
+              </div>
+            </section>
+
+            <section class="screen" data-screen="player-1">
+              <div class="team-title">
+                <div class="game-logo">MT</div>
+                <h2>МИР ТАНКОВ</h2>
+              </div>
+              <div class="player-card static">
+                <div class="player-names">
+                  <p class="player-first">Сергей</p>
+                  <p class="player-nick">SAM_05_2</p>
+                  <p class="player-last">Грачев</p>
+                </div>
+                <div class="photo-placeholder">Фото игрока позже</div>
+                <span class="captain">К</span>
+              </div>
+              <div class="player-info">
+                <p>Группа: C24-722</p>
+                <p>Играет в Мир Танков с 2015 года...</p>
+              </div>
+            </section>
+          </main>
+        </section>
       </div>
-      <nav class="nav-list">
-        <a href="#top-banner" class="nav-link active">
-          <span class="nav-icon">GP</span>
-          <span data-i18n="navHome">Главная страница</span>
-        </a>
-        <a href="/clash-royale" class="nav-link">
-          <span class="nav-icon">CR</span>
-          <span data-i18n="navClash">CLASH ROYALE</span>
-        </a>
-        <a href="#top-banner" class="nav-link">
-          <span class="nav-icon">CS</span>
-          <span data-i18n="navCs2">CS2</span>
-        </a>
-        <a href="#top-banner" class="nav-link">
-          <span class="nav-icon">D2</span>
-          <span data-i18n="navDota">Dota 2</span>
-        </a>
-      </nav>
-    </aside>
-
-    <aside id="settings-panel" class="settings-panel" aria-hidden="true">
-      <div class="panel-head">
-        <h2 data-i18n="settingsTitle">Настройки</h2>
-        <button id="close-settings" class="close-btn" type="button" aria-label="Закрыть">x</button>
-      </div>
-      <div class="setting-group">
-        <label for="language-select" data-i18n="languageLabel">Язык</label>
-        <select id="language-select">
-          <option value="ru" data-i18n="langRu">Русский</option>
-          <option value="en" data-i18n="langEn">English</option>
-        </select>
-      </div>
-      <div class="setting-group">
-        <label for="theme-select" data-i18n="themeLabel">Тема</label>
-        <select id="theme-select">
-          <option value="dark" data-i18n="themeDark">Темная</option>
-          <option value="light" data-i18n="themeLight">Светлая</option>
-        </select>
-      </div>
-    </aside>
-
-    <main class="page">
-      <section id="top-banner" class="carousel" aria-label="Баннеры">
-        <div class="slide active">
-          <img src="/assets/banner1.jpg" alt="Баннер 1" />
-        </div>
-        <div class="slide">
-          <img src="/assets/banner2.jpg" alt="Баннер 2" />
-        </div>
-        <div class="slide">
-          <img src="/assets/banner3.jpg" alt="Баннер 3" />
-        </div>
-        <div class="dots">
-          <button class="dot active" type="button" data-index="0" aria-label="Баннер 1"></button>
-          <button class="dot" type="button" data-index="1" aria-label="Баннер 2"></button>
-          <button class="dot" type="button" data-index="2" aria-label="Баннер 3"></button>
-        </div>
-      </section>
-
-      <section id="brand" class="brand">
-        <h1 data-i18n="brandTitle">КиберРеаткор</h1>
-        <img class="logo" src="/assets/logo.jpg" alt="Лого КиберРеаткор" />
-      </section>
-
-      <section id="contacts" class="contacts">
-        <h2 data-i18n="feedbackTitle">Обратная связь</h2>
-        <p><span data-i18n="emailLabel">Почта</span>: <a href="mailto:123@gmail.com">123@gmail.com</a></p>
-        <p><span data-i18n="tgLabel">TG</span>: <a href="https://t.me/matve88" target="_blank" rel="noopener">@matve88</a></p>
-      </section>
-    </main>
+    </div>
 
     <script>
-      function parseUserFromQueryString(raw) {
-        if (!raw) {
-          return null;
-        }
-        try {
-          const userJson = new URLSearchParams(raw).get("user");
-          return userJson ? JSON.parse(userJson) : null;
-        } catch {
-          return null;
-        }
+      const tg = window.Telegram?.WebApp;
+      if (tg) {
+        tg.ready?.();
+        tg.expand?.();
       }
 
-      function parseUserFromLocation() {
-        try {
-          const hashParams = new URLSearchParams(window.location.hash.replace(/^#/, ""));
-          const searchParams = new URLSearchParams(window.location.search);
-          const tgWebAppData = hashParams.get("tgWebAppData") || searchParams.get("tgWebAppData");
-          if (tgWebAppData) {
-            const decoded = decodeURIComponent(tgWebAppData);
-            const fromData = parseUserFromQueryString(decoded);
-            if (fromData) {
-              return fromData;
-            }
-          }
-          const tgWebAppUser = hashParams.get("tgWebAppUser") || searchParams.get("tgWebAppUser");
-          if (tgWebAppUser) {
-            return JSON.parse(decodeURIComponent(tgWebAppUser));
-          }
-        } catch {
-          return null;
-        }
-        return null;
-      }
+      const frameTitle = document.getElementById("frame-title");
+      const menuBtn = document.getElementById("menu-btn");
+      const menuPanel = document.getElementById("menu-panel");
+      const menuBackdrop = document.getElementById("menu-backdrop");
+      const screens = Array.from(document.querySelectorAll(".screen"));
+      const menuLinks = Array.from(document.querySelectorAll("[data-screen-target]"));
+      const screenJumpers = Array.from(document.querySelectorAll("[data-go-screen]"));
 
-      function cacheTelegramIdentity() {
-        const tg = window.Telegram?.WebApp;
-        if (tg) {
-          tg.ready?.();
-          tg.expand?.();
-        }
-
-        const unsafeUser = tg?.initDataUnsafe?.user || null;
-        const parsedUser = !unsafeUser && tg?.initData ? parseUserFromQueryString(tg.initData) : null;
-        const urlUser = parseUserFromLocation();
-        const user = unsafeUser || parsedUser || urlUser || null;
-
-        const rawId = user?.id ?? null;
-        const parsedId = rawId !== null ? Number.parseInt(String(rawId), 10) : NaN;
-        if (!Number.isFinite(parsedId) || parsedId <= 0) {
-          return;
-        }
-
-        try {
-          localStorage.setItem(
-            "cyber_tg_user_cache",
-            JSON.stringify({
-              id: parsedId,
-              username: user?.username ? String(user.username).toLowerCase() : null,
-              ts: Date.now(),
-            }),
-          );
-        } catch {}
-      }
-
-      cacheTelegramIdentity();
-
-      const I18N = {
-        ru: {
-          menuOpen: "Киберспортивные дисциплины",
-          sidebarTitle: "Навигация",
-          settingsTitle: "Настройки",
-          navHome: "Главная страница",
-          navClash: "CLASH ROYALE",
-          navCs2: "CS2",
-          navDota: "Dota 2",
-          languageLabel: "Язык",
-          themeLabel: "Тема",
-          langRu: "Русский",
-          langEn: "English",
-          themeDark: "Темная",
-          themeLight: "Светлая",
-          brandTitle: "КиберРеаткор",
-          feedbackTitle: "Обратная связь",
-          emailLabel: "Почта",
-          tgLabel: "TG",
-          close: "Закрыть",
-        },
-        en: {
-          menuOpen: "Esports Disciplines",
-          sidebarTitle: "Navigation",
-          settingsTitle: "Settings",
-          navHome: "Home",
-          navClash: "CLASH ROYALE",
-          navCs2: "CS2",
-          navDota: "Dota 2",
-          languageLabel: "Language",
-          themeLabel: "Theme",
-          langRu: "Russian",
-          langEn: "English",
-          themeDark: "Dark",
-          themeLight: "Light",
-          brandTitle: "CyberReactor",
-          feedbackTitle: "Feedback",
-          emailLabel: "Email",
-          tgLabel: "TG",
-          close: "Close",
-        },
+      const titles = {
+        home: "ДомСтр М",
+        teams: "Сборные М",
+        tournaments: "Турниры М",
+        achievements: "Достижения М",
+        "team-mt": "Сборная MT М",
+        "player-1": "Игрок 1 MT М",
       };
 
-      const slides = Array.from(document.querySelectorAll(".slide"));
-      const dots = Array.from(document.querySelectorAll(".dot"));
-      const overlay = document.getElementById("overlay");
-      const sidebar = document.getElementById("sidebar");
-      const settingsPanel = document.getElementById("settings-panel");
-      const menuToggle = document.getElementById("menu-toggle");
-      const settingsToggle = document.getElementById("settings-toggle");
-      const closeMenu = document.getElementById("close-menu");
-      const closeSettings = document.getElementById("close-settings");
-      const languageSelect = document.getElementById("language-select");
-      const themeSelect = document.getElementById("theme-select");
-      const navLinks = Array.from(document.querySelectorAll(".nav-link"));
-
-      let current = 0;
-      let autoplayId = null;
-
-      function showSlide(index) {
-        current = (index + slides.length) % slides.length;
-        slides.forEach((slide, i) => slide.classList.toggle("active", i === current));
-        dots.forEach((dot, i) => dot.classList.toggle("active", i === current));
+      function setMenuOpen(open) {
+        menuPanel.classList.toggle("open", open);
+        menuBackdrop.classList.toggle("open", open);
+        menuPanel.setAttribute("aria-hidden", String(!open));
       }
 
-      function nextSlide() {
-        showSlide(current + 1);
-      }
-
-      function startAutoplay() {
-        clearInterval(autoplayId);
-        autoplayId = setInterval(nextSlide, 3200);
-      }
-
-      function closePanels() {
-        sidebar.classList.remove("open");
-        settingsPanel.classList.remove("open");
-        overlay.classList.remove("visible");
-        sidebar.setAttribute("aria-hidden", "true");
-        settingsPanel.setAttribute("aria-hidden", "true");
-      }
-
-      function openSidebar() {
-        settingsPanel.classList.remove("open");
-        sidebar.classList.add("open");
-        overlay.classList.add("visible");
-        sidebar.setAttribute("aria-hidden", "false");
-        settingsPanel.setAttribute("aria-hidden", "true");
-      }
-
-      function openSettings() {
-        sidebar.classList.remove("open");
-        settingsPanel.classList.add("open");
-        overlay.classList.add("visible");
-        sidebar.setAttribute("aria-hidden", "true");
-        settingsPanel.setAttribute("aria-hidden", "false");
-      }
-
-      function applyTheme(theme) {
-        const safeTheme = theme === "light" ? "light" : "dark";
-        document.body.classList.toggle("theme-light", safeTheme === "light");
-        themeSelect.value = safeTheme;
-        localStorage.setItem("cyber_theme", safeTheme);
-      }
-
-      function translate(lang) {
-        const safeLang = I18N[lang] ? lang : "ru";
-        localStorage.setItem("cyber_lang", safeLang);
-        languageSelect.value = safeLang;
-        document.documentElement.lang = safeLang;
-
-        document.querySelectorAll("[data-i18n]").forEach((el) => {
-          const key = el.dataset.i18n;
-          el.textContent = I18N[safeLang][key] || I18N.ru[key] || key;
+      function showScreen(screenName) {
+        const target = screens.find((screen) => screen.dataset.screen === screenName) ? screenName : "home";
+        screens.forEach((screen) => {
+          const isActive = screen.dataset.screen === target;
+          screen.classList.toggle("active", isActive);
         });
 
-        closeMenu.setAttribute("aria-label", I18N[safeLang].close);
-        closeSettings.setAttribute("aria-label", I18N[safeLang].close);
-        settingsToggle.setAttribute("aria-label", I18N[safeLang].settingsTitle);
+        menuLinks.forEach((link) => {
+          const isCurrent = link.dataset.screenTarget === target;
+          link.style.opacity = isCurrent ? "1" : "0.85";
+        });
+
+        frameTitle.textContent = titles[target] || titles.home;
+        window.location.hash = target;
+        setMenuOpen(false);
       }
 
-      dots.forEach((dot) => {
-        dot.addEventListener("click", () => {
-          showSlide(Number(dot.dataset.index || 0));
-          startAutoplay();
-        });
+      menuBtn.addEventListener("click", () => {
+        const open = !menuPanel.classList.contains("open");
+        setMenuOpen(open);
       });
 
-      menuToggle.addEventListener("click", openSidebar);
-      settingsToggle.addEventListener("click", openSettings);
-      closeMenu.addEventListener("click", closePanels);
-      closeSettings.addEventListener("click", closePanels);
-      overlay.addEventListener("click", closePanels);
+      menuBackdrop.addEventListener("click", () => setMenuOpen(false));
 
-      navLinks.forEach((link) => {
+      menuLinks.forEach((link) => {
         link.addEventListener("click", () => {
-          navLinks.forEach((l) => l.classList.remove("active"));
-          link.classList.add("active");
-          closePanels();
+          showScreen(link.dataset.screenTarget || "home");
         });
       });
 
-      languageSelect.addEventListener("change", (e) => translate(e.target.value));
-      themeSelect.addEventListener("change", (e) => applyTheme(e.target.value));
+      screenJumpers.forEach((item) => {
+        item.addEventListener("click", () => {
+          showScreen(item.dataset.goScreen || "home");
+        });
+      });
 
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") {
-          closePanels();
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          setMenuOpen(false);
         }
       });
 
-      showSlide(0);
-      startAutoplay();
-      applyTheme(localStorage.getItem("cyber_theme") || "dark");
-      translate(localStorage.getItem("cyber_lang") || "ru");
+      const initialScreen = window.location.hash.replace("#", "");
+      showScreen(initialScreen || "home");
     </script>
   </body>
 </html>
 """
-
-
 CLASH_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="ru">
@@ -1192,6 +1194,8 @@ async def clash_royale_register(payload: ClashRoyaleRegistrationRequest) -> dict
             telegram_username=telegram_username,
             allow_update=payload.allow_update,
         )
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
     except ValueError as exc:
         code = str(exc)
         if code == "SUPERCELL_ID_ALREADY_USED":
@@ -1246,5 +1250,6 @@ def run() -> None:
 
 if __name__ == "__main__":
     run()
+
 
 
