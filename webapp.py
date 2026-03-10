@@ -401,11 +401,11 @@ HTML_TEMPLATE = """
           <span class="nav-icon">HM</span>
           <span data-i18n="navMain">Главная страница</span>
         </a>
-        <a href="/games" class="nav-link">
+        <a href="/games?view=teams" class="nav-link">
           <span class="nav-icon">SB</span>
           <span data-i18n="navHome">Сборные</span>
         </a>
-        <a href="/games" class="nav-link">
+        <a href="/games?view=tournaments" class="nav-link">
           <span class="nav-icon">TR</span>
           <span data-i18n="navClash">Турниры</span>
         </a>
@@ -817,13 +817,13 @@ GAMES_TEMPLATE = """
     <main class="page">
       <div class="top-row">
         <a class="back-link" href="/">← Главная страница</a>
-        <span class="top-caption">Сборные и турниры</span>
+        <span id="games-mode-caption" class="top-caption">Сборные</span>
       </div>
       <h1>Игровые дисциплины</h1>
 
       <section class="games-list">
         <a class="game-link" href="#counter-strike-2">
-          <img class="game-thumb" src="/logos/cs2%20logo.webp" alt="Counter Strike 2" />
+          <img class="game-thumb" src="/logos/cs2%20logo.png" alt="Counter Strike 2" />
           <span class="game-name">COUNTER STRIKE 2</span>
         </a>
         <a class="game-link" href="#dota-2">
@@ -831,7 +831,7 @@ GAMES_TEMPLATE = """
           <span class="game-name">DOTA 2</span>
         </a>
         <a class="game-link" href="/clash-royale">
-          <img class="game-thumb" src="/logos/cr%20logo.webp" alt="Clash Royale" />
+          <img class="game-thumb" src="/logos/cr%20logo.png" alt="Clash Royale" />
           <span class="game-name">CLASH ROYALE</span>
         </a>
         <a class="game-link" href="#mobile-legends">
@@ -839,7 +839,7 @@ GAMES_TEMPLATE = """
           <span class="game-name">MOBILE LEGENDS</span>
         </a>
         <a class="game-link" href="#mir-tankov">
-          <img class="game-thumb" src="/logos/wot%20logo.webp" alt="Мир Танков" />
+          <img class="game-thumb" src="/logos/wot%20logo.png" alt="Мир Танков" />
           <span class="game-name">МИР ТАНКОВ</span>
         </a>
       </section>
@@ -851,6 +851,19 @@ GAMES_TEMPLATE = """
         tg.ready?.();
         tg.expand?.();
       }
+
+      const modeCaption = document.getElementById("games-mode-caption");
+      const mode = new URLSearchParams(window.location.search).get("view");
+      if (modeCaption) {
+        if (mode === "tournaments") {
+          modeCaption.textContent = "Турниры";
+        } else if (mode === "teams") {
+          modeCaption.textContent = "Сборные";
+        } else {
+          modeCaption.textContent = "Сборные";
+        }
+      }
+
       const safeTheme = localStorage.getItem("cyber_theme") || "dark";
       document.body.classList.toggle("theme-light", safeTheme === "light");
     </script>
