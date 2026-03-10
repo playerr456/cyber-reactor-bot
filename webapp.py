@@ -1,6 +1,7 @@
 ﻿from pathlib import Path
 
 import os
+import re
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse
@@ -1816,6 +1817,11 @@ CLASH_TEMPLATE = """
           saveChanges: "Сохранить изменения",
           telegramRequired: "Открой мини-приложение из Telegram, чтобы зарегистрироваться.",
           fillAllFields: "Заполни все поля.",
+          fullNameNoDigits: "В ФИО не должно быть цифр.",
+          fullNameNeedsTwoSpaces: "В ФИО должно быть минимум три слова (2 пробела).",
+          groupNeedsOneDash: "В номере группы должно быть ровно одно тире.",
+          groupNoEnglishLetters: "В номере группы не должно быть английских букв.",
+          supercellMustStartHash: "SUPERCELL ID должен начинаться с #.",
           saving: "Сохраняю...",
           registrationError: "Ошибка регистрации",
           registrationSaved: "Регистрация сохранена.",
@@ -1842,6 +1848,11 @@ CLASH_TEMPLATE = """
           saveChanges: "Save changes",
           telegramRequired: "Open the mini app from Telegram to register.",
           fillAllFields: "Fill in all fields.",
+          fullNameNoDigits: "Full name must not contain digits.",
+          fullNameNeedsTwoSpaces: "Full name must contain at least three words (2 spaces).",
+          groupNeedsOneDash: "Group number must contain exactly one dash.",
+          groupNoEnglishLetters: "Group number must not contain English letters.",
+          supercellMustStartHash: "SUPERCELL ID must start with #.",
           saving: "Saving...",
           registrationError: "Registration error",
           registrationSaved: "Registration saved.",
@@ -2103,6 +2114,33 @@ CLASH_TEMPLATE = """
         }
       }
 
+      function validateSubmission(payload) {
+        if (!payload.full_name || !payload.group_number || !payload.supercell_id) {
+          return text.fillAllFields;
+        }
+        if (/\d/.test(payload.full_name)) {
+          return text.fullNameNoDigits;
+        }
+        if ((payload.full_name.match(/ /g) || []).length < 2) {
+          return text.fullNameNeedsTwoSpaces;
+        }
+        if (/[A-Za-z]/.test(payload.group_number)) {
+          return text.groupNoEnglishLetters;
+        }
+        const dashCount = (payload.group_number.match(/-/g) || []).length;
+        if (dashCount !== 1) {
+          return text.groupNeedsOneDash;
+        }
+        const groupParts = payload.group_number.split("-");
+        if (!groupParts[0] || !groupParts[1]) {
+          return text.groupNeedsOneDash;
+        }
+        if (!payload.supercell_id.startsWith("#")) {
+          return text.supercellMustStartHash;
+        }
+        return "";
+      }
+
       form.addEventListener("submit", async (event) => {
         event.preventDefault();
         if (!ensureTelegramId()) {
@@ -2110,7 +2148,7 @@ CLASH_TEMPLATE = """
         }
 
         const payload = {
-          full_name: document.getElementById("full-name").value.trim(),
+          full_name: document.getElementById("full-name").value.replace(/\s+/g, " ").trim(),
           group_number: document.getElementById("group-number").value.trim(),
           supercell_id: document.getElementById("supercell-id").value.trim(),
           telegram_user_id: telegramUserId,
@@ -2119,8 +2157,9 @@ CLASH_TEMPLATE = """
           allow_update: updateMode,
         };
 
-        if (!payload.full_name || !payload.group_number || !payload.supercell_id) {
-          setStatus(text.fillAllFields, true);
+        const validationError = validateSubmission(payload);
+        if (validationError) {
+          setStatus(validationError, true);
           return;
         }
 
@@ -2324,7 +2363,7 @@ async def clash_royale_register(payload: ClashRoyaleRegistrationRequest) -> dict
     if getattr(app.state, "db_error", None):
         raise HTTPException(status_code=503, detail=f"DB is unavailable: {app.state.db_error}")
 
-    full_name = payload.full_name.strip()
+    full_name = re.sub(r"\s+", " ", payload.full_name).strip()
     group_number = payload.group_number.strip()
     supercell_id = payload.supercell_id.strip().upper()
     telegram_user_id = payload.telegram_user_id
@@ -2333,10 +2372,23 @@ async def clash_royale_register(payload: ClashRoyaleRegistrationRequest) -> dict
 
     if len(full_name) < 5:
         raise HTTPException(status_code=400, detail="Укажи корректное ФИО.")
+    if any(char.isdigit() for char in full_name):
+        raise HTTPException(status_code=400, detail="В ФИО не должно быть цифр.")
+    if full_name.count(" ") < 2:
+        raise HTTPException(status_code=400, detail="В ФИО должно быть минимум три слова (2 пробела).")
     if len(group_number) < 2:
         raise HTTPException(status_code=400, detail="Укажи корректный номер группы.")
+    if group_number.count("-") != 1:
+        raise HTTPException(status_code=400, detail="В номере группы должно быть ровно одно тире.")
+    if re.search(r"[A-Za-z]", group_number):
+        raise HTTPException(status_code=400, detail="В номере группы не должно быть английских букв.")
+    left_part, right_part = group_number.split("-", 1)
+    if not left_part or not right_part:
+        raise HTTPException(status_code=400, detail="В номере группы должно быть ровно одно тире.")
     if len(supercell_id) < 3:
         raise HTTPException(status_code=400, detail="Укажи корректный SUPERCELL ID.")
+    if not supercell_id.startswith("#"):
+        raise HTTPException(status_code=400, detail="SUPERCELL ID должен начинаться с #.")
 
     try:
         action = upsert_clash_registration(
