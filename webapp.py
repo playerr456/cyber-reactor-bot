@@ -830,10 +830,10 @@ GAMES_TEMPLATE = """
   <body>
     <main class="page">
       <div class="top-row">
-        <a class="back-link" href="/">← Главная страница</a>
+        <a id="games-back-link" class="back-link" href="/">← Главная страница</a>
         <span id="games-mode-caption" class="top-caption">Сборные</span>
       </div>
-      <h1>Игровые дисциплины</h1>
+      <h1 id="games-title">Игровые дисциплины</h1>
 
       <section class="games-list">
         <a id="cs2-link" class="game-link" href="/discipline/cs2?context=teams">
@@ -853,8 +853,8 @@ GAMES_TEMPLATE = """
           <span class="game-name">MOBILE LEGENDS</span>
         </a>
         <a id="wot-link" class="game-link" href="/discipline/wot?context=teams">
-          <img class="game-thumb" src="/logos/wot%20logo.png" alt="Мир Танков" />
-          <span class="game-name">МИР ТАНКОВ</span>
+          <img id="wot-thumb" class="game-thumb" src="/logos/wot%20logo.png" alt="Мир Танков" />
+          <span id="wot-label" class="game-name">МИР ТАНКОВ</span>
         </a>
       </section>
     </main>
@@ -866,19 +866,59 @@ GAMES_TEMPLATE = """
         tg.expand?.();
       }
 
+      const safeLang = localStorage.getItem("cyber_lang") === "en" ? "en" : "ru";
+      const I18N = {
+        ru: {
+          pageTitle: "Дисциплины",
+          backToMain: "← Главная страница",
+          modeTeams: "Сборные",
+          modeTournaments: "Турниры",
+          disciplinesTitle: "Игровые дисциплины",
+          wotTitle: "МИР ТАНКОВ",
+        },
+        en: {
+          pageTitle: "Disciplines",
+          backToMain: "← Home",
+          modeTeams: "Teams",
+          modeTournaments: "Tournaments",
+          disciplinesTitle: "Game disciplines",
+          wotTitle: "WORLD OF TANKS",
+        },
+      };
+      const text = I18N[safeLang];
+
+      document.documentElement.lang = safeLang;
+      document.title = text.pageTitle;
+
+      const backLink = document.getElementById("games-back-link");
       const modeCaption = document.getElementById("games-mode-caption");
+      const gamesTitle = document.getElementById("games-title");
       const mode = new URLSearchParams(window.location.search).get("view");
       const clashRoyaleLink = document.getElementById("clash-royale-link");
       const cs2Link = document.getElementById("cs2-link");
       const dota2Link = document.getElementById("dota2-link");
       const mlbbLink = document.getElementById("mlbb-link");
       const wotLink = document.getElementById("wot-link");
+      const wotThumb = document.getElementById("wot-thumb");
+      const wotLabel = document.getElementById("wot-label");
       const safeMode = mode === "tournaments" ? "tournaments" : "teams";
+      if (backLink) {
+        backLink.textContent = text.backToMain;
+      }
+      if (gamesTitle) {
+        gamesTitle.textContent = text.disciplinesTitle;
+      }
+      if (wotThumb) {
+        wotThumb.alt = text.wotTitle;
+      }
+      if (wotLabel) {
+        wotLabel.textContent = text.wotTitle;
+      }
       if (modeCaption) {
         if (safeMode === "tournaments") {
-          modeCaption.textContent = "Турниры";
+          modeCaption.textContent = text.modeTournaments;
         } else {
-          modeCaption.textContent = "Сборные";
+          modeCaption.textContent = text.modeTeams;
         }
       }
       if (cs2Link) {
@@ -975,8 +1015,8 @@ ACHIEVEMENTS_TEMPLATE = """
   </head>
   <body>
     <main class="page">
-      <a class="back-link" href="/">← Главная страница</a>
-      <div class="message">Слишком много добились, не поместится на сайте</div>
+      <a id="achievements-back-link" class="back-link" href="/">← Главная страница</a>
+      <div id="achievements-message" class="message">Слишком много добились, не поместится на сайте</div>
     </main>
 
     <script>
@@ -985,6 +1025,33 @@ ACHIEVEMENTS_TEMPLATE = """
         tg.ready?.();
         tg.expand?.();
       }
+
+      const safeLang = localStorage.getItem("cyber_lang") === "en" ? "en" : "ru";
+      const I18N = {
+        ru: {
+          pageTitle: "Достижения",
+          backToMain: "← Главная страница",
+          message: "Слишком много добились, не поместится на сайте",
+        },
+        en: {
+          pageTitle: "Achievements",
+          backToMain: "← Home",
+          message: "We've achieved too much, it won't fit on the website.",
+        },
+      };
+      const text = I18N[safeLang];
+      document.documentElement.lang = safeLang;
+      document.title = text.pageTitle;
+
+      const backLink = document.getElementById("achievements-back-link");
+      const message = document.getElementById("achievements-message");
+      if (backLink) {
+        backLink.textContent = text.backToMain;
+      }
+      if (message) {
+        message.textContent = text.message;
+      }
+
       const safeTheme = localStorage.getItem("cyber_theme") || "dark";
       document.body.classList.toggle("theme-light", safeTheme === "light");
     </script>
@@ -1197,10 +1264,10 @@ DISCIPLINE_TEMPLATE = """
         <span id="mode-caption" class="mode-caption">Сборные</span>
       </div>
 
-      <section class="card">
+      <section class="card" data-discipline-slug="__DISCIPLINE_SLUG__">
         <div class="discipline-head">
-          <img class="discipline-logo" src="__DISCIPLINE_LOGO__" alt="__DISCIPLINE_TITLE__" />
-          <h1 class="discipline-title">__DISCIPLINE_TITLE__</h1>
+          <img id="discipline-logo" class="discipline-logo" src="__DISCIPLINE_LOGO__" alt="__DISCIPLINE_TITLE__" />
+          <h1 id="discipline-title" class="discipline-title">__DISCIPLINE_TITLE__</h1>
         </div>
 
         <section id="entry-stage" class="entry-stage">
@@ -1220,18 +1287,18 @@ DISCIPLINE_TEMPLATE = """
 
         <form id="team-form" class="form">
           <div>
-            <label for="team-full-name">ФИО</label>
+            <label id="team-full-name-label" for="team-full-name">ФИО</label>
             <input id="team-full-name" type="text" maxlength="140" placeholder="Иванов Иван Иванович" required />
           </div>
           <div>
-            <label for="team-group-number">Номер группы</label>
+            <label id="team-group-number-label" for="team-group-number">Номер группы</label>
             <input id="team-group-number" type="text" maxlength="60" placeholder="БИ-22-1" required />
           </div>
           <div>
-            <label for="team-game-id">Игровой ID / Никнейм</label>
+            <label id="team-game-id-label" for="team-game-id">Игровой ID / Никнейм</label>
             <input id="team-game-id" type="text" maxlength="80" placeholder="Ник или ID в игре" required />
           </div>
-          <button class="action-btn" type="submit">Отправить заявление</button>
+          <button id="team-submit-btn" class="action-btn" type="submit">Отправить заявление</button>
         </form>
       </section>
     </div>
@@ -1242,6 +1309,48 @@ DISCIPLINE_TEMPLATE = """
         tg.ready?.();
         tg.expand?.();
       }
+
+      const safeLang = localStorage.getItem("cyber_lang") === "en" ? "en" : "ru";
+      const I18N = {
+        ru: {
+          backToDisciplines: "← Назад к дисциплинам",
+          modeTeams: "Сборные",
+          modeTournaments: "Турниры",
+          actionTeams: "Подать заявку в сборную",
+          actionTournaments: "Зарегистрироваться на турнир",
+          teamFormTitle: "Подача заявления в сборную",
+          close: "Закрыть",
+          fullName: "ФИО",
+          fullNamePlaceholder: "Иванов Иван Иванович",
+          groupNumber: "Номер группы",
+          groupNumberPlaceholder: "БИ-22-1",
+          gameId: "Игровой ID / Никнейм",
+          gameIdPlaceholder: "Ник или ID в игре",
+          submitTeam: "Отправить заявление",
+          registrationClosed: "Пока регистрация не открыта",
+          teamApplicationSent: "Заявление в сборную отправлено",
+        },
+        en: {
+          backToDisciplines: "← Back to disciplines",
+          modeTeams: "Teams",
+          modeTournaments: "Tournaments",
+          actionTeams: "Apply to team",
+          actionTournaments: "Register for tournament",
+          teamFormTitle: "Team application",
+          close: "Close",
+          fullName: "Full name",
+          fullNamePlaceholder: "John Doe",
+          groupNumber: "Group number",
+          groupNumberPlaceholder: "BI-22-1",
+          gameId: "Game ID / Nickname",
+          gameIdPlaceholder: "Nickname or in-game ID",
+          submitTeam: "Submit application",
+          registrationClosed: "Registration is not open yet",
+          teamApplicationSent: "Team application sent",
+        },
+      };
+      const text = I18N[safeLang];
+      document.documentElement.lang = safeLang;
 
       const safeTheme = localStorage.getItem("cyber_theme") || "dark";
       document.body.classList.toggle("theme-light", safeTheme === "light");
@@ -1254,15 +1363,74 @@ DISCIPLINE_TEMPLATE = """
       const status = document.getElementById("status");
       const modalBackdrop = document.getElementById("team-modal-backdrop");
       const closeModalBtn = document.getElementById("close-modal-btn");
+      const teamFormTitle = document.getElementById("team-form-title");
+      const teamFullNameLabel = document.getElementById("team-full-name-label");
+      const teamFullNameInput = document.getElementById("team-full-name");
+      const teamGroupNumberLabel = document.getElementById("team-group-number-label");
+      const teamGroupNumberInput = document.getElementById("team-group-number");
+      const teamGameIdLabel = document.getElementById("team-game-id-label");
+      const teamGameIdInput = document.getElementById("team-game-id");
+      const teamSubmitBtn = document.getElementById("team-submit-btn");
       const teamForm = document.getElementById("team-form");
+      const disciplineTitle = document.getElementById("discipline-title");
+      const disciplineLogo = document.getElementById("discipline-logo");
+      const disciplineCard = document.querySelector(".card[data-discipline-slug]");
+      const disciplineSlug = disciplineCard ? disciplineCard.dataset.disciplineSlug : "";
+      const DISCIPLINE_TITLES = {
+        cs2: { ru: "COUNTER STRIKE 2", en: "COUNTER STRIKE 2" },
+        dota2: { ru: "DOTA 2", en: "DOTA 2" },
+        mlbb: { ru: "MOBILE LEGENDS", en: "MOBILE LEGENDS" },
+        wot: { ru: "МИР ТАНКОВ", en: "WORLD OF TANKS" },
+      };
+      const localizedDisciplineTitle = DISCIPLINE_TITLES[disciplineSlug]?.[safeLang];
+      if (localizedDisciplineTitle) {
+        if (disciplineTitle) {
+          disciplineTitle.textContent = localizedDisciplineTitle;
+        }
+        if (disciplineLogo) {
+          disciplineLogo.alt = localizedDisciplineTitle;
+        }
+        document.title = localizedDisciplineTitle;
+      }
+
+      if (backLink) {
+        backLink.textContent = text.backToDisciplines;
+      }
+      if (teamFormTitle) {
+        teamFormTitle.textContent = text.teamFormTitle;
+      }
+      if (closeModalBtn) {
+        closeModalBtn.setAttribute("aria-label", text.close);
+      }
+      if (teamFullNameLabel) {
+        teamFullNameLabel.textContent = text.fullName;
+      }
+      if (teamFullNameInput) {
+        teamFullNameInput.placeholder = text.fullNamePlaceholder;
+      }
+      if (teamGroupNumberLabel) {
+        teamGroupNumberLabel.textContent = text.groupNumber;
+      }
+      if (teamGroupNumberInput) {
+        teamGroupNumberInput.placeholder = text.groupNumberPlaceholder;
+      }
+      if (teamGameIdLabel) {
+        teamGameIdLabel.textContent = text.gameId;
+      }
+      if (teamGameIdInput) {
+        teamGameIdInput.placeholder = text.gameIdPlaceholder;
+      }
+      if (teamSubmitBtn) {
+        teamSubmitBtn.textContent = text.submitTeam;
+      }
 
       if (context === "tournaments") {
-        modeCaption.textContent = "Турниры";
-        primaryBtn.textContent = "Зарегистрироваться на турнир";
+        modeCaption.textContent = text.modeTournaments;
+        primaryBtn.textContent = text.actionTournaments;
         backLink.href = "/games?view=tournaments";
       } else {
-        modeCaption.textContent = "Сборные";
-        primaryBtn.textContent = "Подать заявку в сборную";
+        modeCaption.textContent = text.modeTeams;
+        primaryBtn.textContent = text.actionTeams;
         backLink.href = "/games?view=teams";
       }
 
@@ -1280,7 +1448,7 @@ DISCIPLINE_TEMPLATE = """
 
       primaryBtn.addEventListener("click", () => {
         if (context === "tournaments") {
-          setStatus("Пока регистрация не открыта");
+          setStatus(text.registrationClosed);
           return;
         }
         openTeamModal();
@@ -1297,7 +1465,7 @@ DISCIPLINE_TEMPLATE = """
         event.preventDefault();
         closeTeamModal();
         teamForm.reset();
-        setStatus("Заявление в сборную отправлено");
+        setStatus(text.teamApplicationSent);
       });
     </script>
   </body>
@@ -1499,15 +1667,15 @@ CLASH_TEMPLATE = """
 
           <form id="clash-form" class="form">
             <div>
-              <label for="full-name">ФИО</label>
+              <label id="full-name-label" for="full-name">ФИО</label>
               <input id="full-name" name="full_name" type="text" maxlength="140" placeholder="Иванов Иван Иванович" required />
             </div>
             <div>
-              <label for="group-number">Номер группы</label>
+              <label id="group-number-label" for="group-number">Номер группы</label>
               <input id="group-number" name="group_number" type="text" maxlength="60" placeholder="БИ-22-1" required />
             </div>
             <div>
-              <label for="supercell-id">SUPERCELL ID</label>
+              <label id="supercell-id-label" for="supercell-id">SUPERCELL ID</label>
               <input id="supercell-id" name="supercell_id" type="text" maxlength="40" placeholder="#2ABCDEF9" required />
             </div>
             <button id="submit-btn" class="submit-btn" type="submit">Зарегистрироваться</button>
@@ -1525,6 +1693,63 @@ CLASH_TEMPLATE = """
         tg.expand?.();
       }
 
+      const safeLang = localStorage.getItem("cyber_lang") === "en" ? "en" : "ru";
+      const I18N = {
+        ru: {
+          pageTitle: "Регистрация Clash Royale",
+          backToMain: "← На главную",
+          entryTournament: "Зарегистрироваться на турнир",
+          entryTeams: "Подать заявку в сборную",
+          titleTournament: "Регистрация на турнир",
+          titleTeams: "Подача заявления в сборную",
+          subtitleTournament: "Заполни данные для регистрации на турнир.",
+          subtitleTeams: "Заполни данные для подачи заявления в сборную.",
+          editRegistration: "Изменить данные в регистрации",
+          fullName: "ФИО",
+          groupNumber: "Номер группы",
+          supercellId: "SUPERCELL ID",
+          fullNamePlaceholder: "Иванов Иван Иванович",
+          groupNumberPlaceholder: "БИ-22-1",
+          supercellIdPlaceholder: "#2ABCDEF9",
+          saveChanges: "Сохранить изменения",
+          telegramRequired: "Открой мини-приложение из Telegram, чтобы зарегистрироваться.",
+          fillAllFields: "Заполни все поля.",
+          saving: "Сохраняю...",
+          registrationError: "Ошибка регистрации",
+          registrationSaved: "Регистрация сохранена.",
+          registrationErrorGeneric: "Ошибка регистрации.",
+          editHint: "Измени данные и нажми «Сохранить изменения».",
+        },
+        en: {
+          pageTitle: "Clash Royale Registration",
+          backToMain: "← Home",
+          entryTournament: "Register for tournament",
+          entryTeams: "Apply to team",
+          titleTournament: "Tournament registration",
+          titleTeams: "Team application",
+          subtitleTournament: "Fill in the details for tournament registration.",
+          subtitleTeams: "Fill in the details for the team application.",
+          editRegistration: "Edit registration details",
+          fullName: "Full name",
+          groupNumber: "Group number",
+          supercellId: "SUPERCELL ID",
+          fullNamePlaceholder: "John Doe",
+          groupNumberPlaceholder: "BI-22-1",
+          supercellIdPlaceholder: "#2ABCDEF9",
+          saveChanges: "Save changes",
+          telegramRequired: "Open the mini app from Telegram to register.",
+          fillAllFields: "Fill in all fields.",
+          saving: "Saving...",
+          registrationError: "Registration error",
+          registrationSaved: "Registration saved.",
+          registrationErrorGeneric: "Registration error.",
+          editHint: "Update your data and click \"Save changes\".",
+        },
+      };
+      const text = I18N[safeLang];
+      document.documentElement.lang = safeLang;
+      document.title = text.pageTitle;
+
       const form = document.getElementById("clash-form");
       const submitBtn = document.getElementById("submit-btn");
       const statusEl = document.getElementById("status");
@@ -1535,6 +1760,13 @@ CLASH_TEMPLATE = """
       const formStage = document.getElementById("form-stage");
       const formTitle = document.getElementById("form-title");
       const formSubtitle = document.getElementById("form-subtitle");
+      const backBtn = document.getElementById("back-btn");
+      const fullNameLabel = document.getElementById("full-name-label");
+      const groupNumberLabel = document.getElementById("group-number-label");
+      const supercellIdLabel = document.getElementById("supercell-id-label");
+      const fullNameInput = document.getElementById("full-name");
+      const groupNumberInput = document.getElementById("group-number");
+      const supercellIdInput = document.getElementById("supercell-id");
       let telegramUserId = null;
       let telegramUsername = null;
 
@@ -1544,15 +1776,15 @@ CLASH_TEMPLATE = """
       const contextParam = new URLSearchParams(window.location.search).get("context");
       const isTournamentFlow = contextParam === "tournaments";
       const primaryActionLabel = isTournamentFlow
-        ? "Зарегистрироваться на турнир"
-        : "Подать заявку в сборную";
-      const formTitleLabel = isTournamentFlow ? "Регистрация на турнир" : "Подача заявления в сборную";
+        ? text.entryTournament
+        : text.entryTeams;
+      const formTitleLabel = isTournamentFlow ? text.titleTournament : text.titleTeams;
       const formSubtitleLabel = isTournamentFlow
-        ? "Заполни данные для регистрации на турнир."
-        : "Заполни данные для подачи заявления в сборную.";
+        ? text.subtitleTournament
+        : text.subtitleTeams;
       const defaultSubmitLabel = primaryActionLabel;
-      const backBtn = document.getElementById("back-btn");
       if (backBtn) {
+        backBtn.textContent = text.backToMain;
         backBtn.href = isTournamentFlow ? "/games?view=tournaments" : "/games?view=teams";
       }
       if (openFormBtn) {
@@ -1563,6 +1795,27 @@ CLASH_TEMPLATE = """
       }
       if (formSubtitle) {
         formSubtitle.textContent = formSubtitleLabel;
+      }
+      if (editExistingBtn) {
+        editExistingBtn.textContent = text.editRegistration;
+      }
+      if (fullNameLabel) {
+        fullNameLabel.textContent = text.fullName;
+      }
+      if (groupNumberLabel) {
+        groupNumberLabel.textContent = text.groupNumber;
+      }
+      if (supercellIdLabel) {
+        supercellIdLabel.textContent = text.supercellId;
+      }
+      if (fullNameInput) {
+        fullNameInput.placeholder = text.fullNamePlaceholder;
+      }
+      if (groupNumberInput) {
+        groupNumberInput.placeholder = text.groupNumberPlaceholder;
+      }
+      if (supercellIdInput) {
+        supercellIdInput.placeholder = text.supercellIdPlaceholder;
       }
 
       const safeTheme = localStorage.getItem("cyber_theme") || "dark";
@@ -1656,7 +1909,7 @@ CLASH_TEMPLATE = """
 
       function ensureTelegramId() {
         if (telegramUserId === null) {
-          setStatus("Открой мини-приложение из Telegram, чтобы зарегистрироваться.", true);
+          setStatus(text.telegramRequired, true);
           submitBtn.disabled = true;
           editExistingBtn.disabled = true;
           return false;
@@ -1667,7 +1920,7 @@ CLASH_TEMPLATE = """
       }
 
       function syncButtonText() {
-        submitBtn.textContent = updateMode ? "Сохранить изменения" : defaultSubmitLabel;
+        submitBtn.textContent = updateMode ? text.saveChanges : defaultSubmitLabel;
       }
 
       function setExistingView(active) {
@@ -1749,12 +2002,12 @@ CLASH_TEMPLATE = """
         };
 
         if (!payload.full_name || !payload.group_number || !payload.supercell_id) {
-          setStatus("Заполни все поля.", true);
+          setStatus(text.fillAllFields, true);
           return;
         }
 
         submitBtn.disabled = true;
-        setStatus("Сохраняю...");
+        setStatus(text.saving);
 
         try {
           const response = await fetch("/api/clash-royale/register", {
@@ -1765,16 +2018,16 @@ CLASH_TEMPLATE = """
 
           const data = await response.json();
           if (!response.ok) {
-            throw new Error(data.detail || "Ошибка регистрации");
+            throw new Error(data.detail || text.registrationError);
           }
 
-          setStatus(data.message || "Регистрация сохранена.");
+          setStatus(data.message || text.registrationSaved);
           hasExistingRegistration = true;
           updateMode = false;
           setExistingView(true);
           syncButtonText();
         } catch (error) {
-          setStatus(error.message || "Ошибка регистрации.", true);
+          setStatus(error.message || text.registrationErrorGeneric, true);
         } finally {
           submitBtn.disabled = false;
         }
@@ -1785,7 +2038,7 @@ CLASH_TEMPLATE = """
         showFormStage();
         setExistingView(false);
         syncButtonText();
-        setStatus("Измени данные и нажми «Сохранить изменения».");
+        setStatus(text.editHint);
       });
 
       async function initRegistrationPage() {
@@ -1875,9 +2128,9 @@ async def discipline_page(slug: str, request: Request) -> HTMLResponse:
         raise HTTPException(status_code=404, detail="Discipline not found")
 
     html = (
-        DISCIPLINE_TEMPLATE.replace("__DISCIPLINE_TITLE__", info["title"]).replace(
-            "__DISCIPLINE_LOGO__", info["logo"]
-        )
+        DISCIPLINE_TEMPLATE.replace("__DISCIPLINE_TITLE__", info["title"])
+        .replace("__DISCIPLINE_LOGO__", info["logo"])
+        .replace("__DISCIPLINE_SLUG__", slug)
     )
     return HTMLResponse(content=html)
 
