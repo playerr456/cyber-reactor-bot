@@ -24,6 +24,14 @@ app.mount("/logos", StaticFiles(directory=Path(__file__).parent / "logos"), name
 TOURNAMENTS = ["clash royale", "dota 2", "cs go"]
 
 
+DISCIPLINE_PAGES: dict[str, dict[str, str]] = {
+    "cs2": {"title": "COUNTER STRIKE 2", "logo": "/logos/cs2%20logo.png"},
+    "dota2": {"title": "DOTA 2", "logo": "/logos/dota2%20logo.png"},
+    "mlbb": {"title": "MOBILE LEGENDS", "logo": "/logos/mlbb%20logo.png"},
+    "wot": {"title": "МИР ТАНКОВ", "logo": "/logos/wot%20logo.png"},
+}
+
+
 HTML_TEMPLATE = """
 <!DOCTYPE html>
 <html lang="ru">
@@ -828,11 +836,11 @@ GAMES_TEMPLATE = """
       <h1>Игровые дисциплины</h1>
 
       <section class="games-list">
-        <a class="game-link" href="#counter-strike-2">
+        <a id="cs2-link" class="game-link" href="/discipline/cs2?context=teams">
           <img class="game-thumb cs2-thumb" src="/logos/cs2%20logo.png" alt="Counter Strike 2" />
           <span class="game-name">COUNTER STRIKE 2</span>
         </a>
-        <a class="game-link" href="#dota-2">
+        <a id="dota2-link" class="game-link" href="/discipline/dota2?context=teams">
           <img class="game-thumb" src="/logos/dota2%20logo.png" alt="Dota 2" />
           <span class="game-name">DOTA 2</span>
         </a>
@@ -840,11 +848,11 @@ GAMES_TEMPLATE = """
           <img class="game-thumb" src="/logos/cr%20logo.png" alt="Clash Royale" />
           <span class="game-name">CLASH ROYALE</span>
         </a>
-        <a class="game-link" href="#mobile-legends">
+        <a id="mlbb-link" class="game-link" href="/discipline/mlbb?context=teams">
           <img class="game-thumb" src="/logos/mlbb%20logo.png" alt="Mobile Legends" />
           <span class="game-name">MOBILE LEGENDS</span>
         </a>
-        <a class="game-link" href="#mir-tankov">
+        <a id="wot-link" class="game-link" href="/discipline/wot?context=teams">
           <img class="game-thumb" src="/logos/wot%20logo.png" alt="Мир Танков" />
           <span class="game-name">МИР ТАНКОВ</span>
         </a>
@@ -861,6 +869,10 @@ GAMES_TEMPLATE = """
       const modeCaption = document.getElementById("games-mode-caption");
       const mode = new URLSearchParams(window.location.search).get("view");
       const clashRoyaleLink = document.getElementById("clash-royale-link");
+      const cs2Link = document.getElementById("cs2-link");
+      const dota2Link = document.getElementById("dota2-link");
+      const mlbbLink = document.getElementById("mlbb-link");
+      const wotLink = document.getElementById("wot-link");
       const safeMode = mode === "tournaments" ? "tournaments" : "teams";
       if (modeCaption) {
         if (safeMode === "tournaments") {
@@ -869,8 +881,20 @@ GAMES_TEMPLATE = """
           modeCaption.textContent = "Сборные";
         }
       }
+      if (cs2Link) {
+        cs2Link.href = `/discipline/cs2?context=${safeMode}`;
+      }
+      if (dota2Link) {
+        dota2Link.href = `/discipline/dota2?context=${safeMode}`;
+      }
       if (clashRoyaleLink) {
         clashRoyaleLink.href = `/clash-royale?context=${safeMode}`;
+      }
+      if (mlbbLink) {
+        mlbbLink.href = `/discipline/mlbb?context=${safeMode}`;
+      }
+      if (wotLink) {
+        wotLink.href = `/discipline/wot?context=${safeMode}`;
       }
 
       const safeTheme = localStorage.getItem("cyber_theme") || "dark";
@@ -963,6 +987,318 @@ ACHIEVEMENTS_TEMPLATE = """
       }
       const safeTheme = localStorage.getItem("cyber_theme") || "dark";
       document.body.classList.toggle("theme-light", safeTheme === "light");
+    </script>
+  </body>
+</html>
+"""
+
+
+DISCIPLINE_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>__DISCIPLINE_TITLE__</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #06080c;
+        --text: #f5f7fa;
+        --panel: #10141d;
+        --panel-line: rgba(255, 255, 255, 0.16);
+        --muted: #bac6d8;
+        --accent: #4f8cff;
+        --ok: #6ee7b7;
+      }
+
+      body.theme-light {
+        --bg: #f3f5f9;
+        --text: #0f172a;
+        --panel: #ffffff;
+        --panel-line: rgba(15, 23, 42, 0.16);
+        --muted: #5a6678;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      .page {
+        width: min(860px, calc(100% - 24px));
+        margin: 0 auto;
+        padding: 74px 0 28px;
+      }
+
+      .top-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .back-link {
+        display: inline-flex;
+        align-items: center;
+        text-decoration: none;
+        color: var(--text);
+        border: 1px solid var(--panel-line);
+        border-radius: 10px;
+        padding: 9px 12px;
+        background: var(--panel);
+      }
+
+      .mode-caption {
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .card {
+        margin-top: 14px;
+        border: 1px solid var(--panel-line);
+        border-radius: 14px;
+        background: var(--panel);
+        padding: 14px;
+      }
+
+      .discipline-head {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .discipline-logo {
+        width: 96px;
+        height: 62px;
+        object-fit: contain;
+        border-radius: 8px;
+        background: #0a0f18;
+        padding: 4px;
+      }
+
+      body.theme-light .discipline-logo {
+        background: #edf2fb;
+      }
+
+      .discipline-title {
+        margin: 0;
+        font-size: clamp(24px, 4vw, 36px);
+        line-height: 1.1;
+      }
+
+      .entry-stage {
+        min-height: 250px;
+        display: grid;
+        place-items: center;
+      }
+
+      .action-btn {
+        border-radius: 10px;
+        border: 1px solid var(--accent);
+        background: var(--accent);
+        color: #ffffff;
+        font-weight: 700;
+        padding: 12px 14px;
+        width: min(360px, 100%);
+        cursor: pointer;
+      }
+
+      .status {
+        min-height: 22px;
+        margin-top: 12px;
+        color: var(--ok);
+        font-weight: 500;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.46);
+        z-index: 50;
+        display: grid;
+        place-items: center;
+        padding: 16px;
+      }
+
+      .modal {
+        width: min(640px, 100%);
+        border-radius: 14px;
+        border: 1px solid var(--panel-line);
+        background: var(--panel);
+        padding: 16px;
+      }
+
+      .modal-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+
+      .modal-top h2 {
+        margin: 0;
+        font-size: clamp(20px, 3vw, 28px);
+      }
+
+      .close-modal-btn {
+        border: 1px solid var(--panel-line);
+        background: transparent;
+        color: var(--text);
+        border-radius: 8px;
+        width: 34px;
+        height: 34px;
+        cursor: pointer;
+      }
+
+      .form {
+        display: grid;
+        gap: 10px;
+      }
+
+      label {
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      input {
+        width: 100%;
+        border-radius: 10px;
+        border: 1px solid var(--panel-line);
+        background: transparent;
+        color: var(--text);
+        padding: 10px 12px;
+        font-family: inherit;
+      }
+    </style>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  </head>
+  <body>
+    <main class="page">
+      <div class="top-row">
+        <a id="back-link" class="back-link" href="/games?view=teams">← Назад к дисциплинам</a>
+        <span id="mode-caption" class="mode-caption">Сборные</span>
+      </div>
+
+      <section class="card">
+        <div class="discipline-head">
+          <img class="discipline-logo" src="__DISCIPLINE_LOGO__" alt="__DISCIPLINE_TITLE__" />
+          <h1 class="discipline-title">__DISCIPLINE_TITLE__</h1>
+        </div>
+
+        <section id="entry-stage" class="entry-stage">
+          <button id="primary-btn" class="action-btn" type="button">Подать заявку в сборную</button>
+        </section>
+
+        <div id="status" class="status"></div>
+      </section>
+    </main>
+
+    <div id="team-modal-backdrop" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="team-form-title">
+      <section class="modal">
+        <div class="modal-top">
+          <h2 id="team-form-title">Подача заявления в сборную</h2>
+          <button id="close-modal-btn" class="close-modal-btn" type="button" aria-label="Закрыть">x</button>
+        </div>
+
+        <form id="team-form" class="form">
+          <div>
+            <label for="team-full-name">ФИО</label>
+            <input id="team-full-name" type="text" maxlength="140" placeholder="Иванов Иван Иванович" required />
+          </div>
+          <div>
+            <label for="team-group-number">Номер группы</label>
+            <input id="team-group-number" type="text" maxlength="60" placeholder="БИ-22-1" required />
+          </div>
+          <div>
+            <label for="team-game-id">Игровой ID / Никнейм</label>
+            <input id="team-game-id" type="text" maxlength="80" placeholder="Ник или ID в игре" required />
+          </div>
+          <button class="action-btn" type="submit">Отправить заявление</button>
+        </form>
+      </section>
+    </div>
+
+    <script>
+      const tg = window.Telegram?.WebApp;
+      if (tg) {
+        tg.ready?.();
+        tg.expand?.();
+      }
+
+      const safeTheme = localStorage.getItem("cyber_theme") || "dark";
+      document.body.classList.toggle("theme-light", safeTheme === "light");
+
+      const params = new URLSearchParams(window.location.search);
+      const context = params.get("context") === "tournaments" ? "tournaments" : "teams";
+      const modeCaption = document.getElementById("mode-caption");
+      const backLink = document.getElementById("back-link");
+      const primaryBtn = document.getElementById("primary-btn");
+      const status = document.getElementById("status");
+      const modalBackdrop = document.getElementById("team-modal-backdrop");
+      const closeModalBtn = document.getElementById("close-modal-btn");
+      const teamForm = document.getElementById("team-form");
+
+      if (context === "tournaments") {
+        modeCaption.textContent = "Турниры";
+        primaryBtn.textContent = "Зарегистрироваться на турнир";
+        backLink.href = "/games?view=tournaments";
+      } else {
+        modeCaption.textContent = "Сборные";
+        primaryBtn.textContent = "Подать заявку в сборную";
+        backLink.href = "/games?view=teams";
+      }
+
+      function setStatus(text) {
+        status.textContent = text;
+      }
+
+      function openTeamModal() {
+        modalBackdrop.classList.remove("hidden");
+      }
+
+      function closeTeamModal() {
+        modalBackdrop.classList.add("hidden");
+      }
+
+      primaryBtn.addEventListener("click", () => {
+        if (context === "tournaments") {
+          setStatus("Пока регистрация не открыта");
+          return;
+        }
+        openTeamModal();
+      });
+
+      closeModalBtn.addEventListener("click", closeTeamModal);
+      modalBackdrop.addEventListener("click", (event) => {
+        if (event.target === modalBackdrop) {
+          closeTeamModal();
+        }
+      });
+
+      teamForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        closeTeamModal();
+        teamForm.reset();
+        setStatus("Заявление в сборную отправлено");
+      });
     </script>
   </body>
 </html>
@@ -1530,6 +1866,20 @@ async def index(request: Request) -> HTMLResponse:
 @app.get("/games", response_class=HTMLResponse)
 async def games_page(request: Request) -> HTMLResponse:
     return HTMLResponse(content=GAMES_TEMPLATE)
+
+
+@app.get("/discipline/{slug}", response_class=HTMLResponse)
+async def discipline_page(slug: str, request: Request) -> HTMLResponse:
+    info = DISCIPLINE_PAGES.get(slug)
+    if not info:
+        raise HTTPException(status_code=404, detail="Discipline not found")
+
+    html = (
+        DISCIPLINE_TEMPLATE.replace("__DISCIPLINE_TITLE__", info["title"]).replace(
+            "__DISCIPLINE_LOGO__", info["logo"]
+        )
+    )
+    return HTMLResponse(content=html)
 
 
 @app.get("/achievements", response_class=HTMLResponse)
