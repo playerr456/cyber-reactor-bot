@@ -1846,7 +1846,7 @@ CLASH_TEMPLATE = """
           registrationError: "Registration error",
           registrationSaved: "Registration saved.",
           registrationErrorGeneric: "Registration error.",
-          editHint: "Update your data and click \"Save changes\".",
+          editHint: "Update your data and click Save changes.",
         },
       };
       const text = I18N[safeLang];
