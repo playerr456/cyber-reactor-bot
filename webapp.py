@@ -830,7 +830,7 @@ GAMES_TEMPLATE = """
           <img class="game-thumb" src="/logos/dota2%20logo.png" alt="Dota 2" />
           <span class="game-name">DOTA 2</span>
         </a>
-        <a class="game-link" href="/clash-royale">
+        <a id="clash-royale-link" class="game-link" href="/clash-royale?context=teams">
           <img class="game-thumb" src="/logos/cr%20logo.png" alt="Clash Royale" />
           <span class="game-name">CLASH ROYALE</span>
         </a>
@@ -854,14 +854,17 @@ GAMES_TEMPLATE = """
 
       const modeCaption = document.getElementById("games-mode-caption");
       const mode = new URLSearchParams(window.location.search).get("view");
+      const clashRoyaleLink = document.getElementById("clash-royale-link");
+      const safeMode = mode === "tournaments" ? "tournaments" : "teams";
       if (modeCaption) {
-        if (mode === "tournaments") {
+        if (safeMode === "tournaments") {
           modeCaption.textContent = "Турниры";
-        } else if (mode === "teams") {
-          modeCaption.textContent = "Сборные";
         } else {
           modeCaption.textContent = "Сборные";
         }
+      }
+      if (clashRoyaleLink) {
+        clashRoyaleLink.href = `/clash-royale?context=${safeMode}`;
       }
 
       const safeTheme = localStorage.getItem("cyber_theme") || "dark";
@@ -1035,7 +1038,7 @@ CLASH_TEMPLATE = """
     <main class="page">
       <section class="card">
         <div class="top-row">
-          <a class="back-btn" href="/">← На главную</a>
+          <a id="back-btn" class="back-btn" href="/">← На главную</a>
           <span class="game-tag">CLASH ROYALE</span>
         </div>
 
@@ -1083,6 +1086,15 @@ CLASH_TEMPLATE = """
 
       let hasExistingRegistration = false;
       let updateMode = false;
+      const contextParam = new URLSearchParams(window.location.search).get("context");
+      const isTournamentFlow = contextParam === "tournaments";
+      const defaultSubmitLabel = isTournamentFlow
+        ? "Зарегистрироваться на турнир"
+        : "Подать заявку в сборную";
+      const backBtn = document.getElementById("back-btn");
+      if (backBtn) {
+        backBtn.href = isTournamentFlow ? "/games?view=tournaments" : "/games?view=teams";
+      }
 
       const safeTheme = localStorage.getItem("cyber_theme") || "dark";
       document.body.classList.toggle("theme-light", safeTheme === "light");
@@ -1186,7 +1198,7 @@ CLASH_TEMPLATE = """
       }
 
       function syncButtonText() {
-        submitBtn.textContent = updateMode ? "Сохранить изменения" : "Зарегистрироваться";
+        submitBtn.textContent = updateMode ? "Сохранить изменения" : defaultSubmitLabel;
       }
 
       function setExistingView(active) {
