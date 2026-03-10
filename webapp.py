@@ -1,5 +1,7 @@
 ﻿from pathlib import Path
 
+import os
+
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
@@ -2390,6 +2392,17 @@ async def registration(user_id: int) -> dict[str, object]:
 @app.get("/api/tournaments")
 async def tournaments() -> dict[str, list[str]]:
     return {"items": TOURNAMENTS}
+
+
+@app.get("/api/debug/storage-status")
+async def debug_storage_status() -> dict[str, object]:
+    token = os.getenv("BLOB_READ_WRITE_TOKEN", "")
+    return {
+        "vercel_env_present": bool(os.getenv("VERCEL")),
+        "blob_token_present": bool(token),
+        "blob_token_preview": f"{token[:10]}..." if token else "",
+        "db_error": getattr(app.state, "db_error", None),
+    }
 
 
 def run() -> None:
