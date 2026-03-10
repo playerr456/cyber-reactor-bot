@@ -9,6 +9,9 @@ from typing import Any
 
 ALLOWED_TOURNAMENTS = {"clash royale", "dota 2", "cs go"}
 _BLOB_PREFIX = "registrations"
+_CLASH_ROOT_TOURNAMENTS = "tournaments"
+_CLASH_ROOT_NATIONAL_TEAMS = "national_teams"
+_CLASH_ALLOWED_CONTEXTS = {_CLASH_ROOT_TOURNAMENTS, _CLASH_ROOT_NATIONAL_TEAMS}
 
 
 def _default_db_path() -> str:
@@ -40,6 +43,57 @@ def _extract_tournament_from_path(pathname: str) -> str | None:
         return None
     candidate = _unslug_tournament(m.group(1))
     return candidate if candidate in ALLOWED_TOURNAMENTS else None
+
+
+def normalize_clash_context(context: str | None) -> str:
+    raw = (context or "").strip().lower()
+    if raw in {"tournaments", "tournament"}:
+        return _CLASH_ROOT_TOURNAMENTS
+    if raw in {"national_teams", "national teams", "teams", "team"}:
+        return _CLASH_ROOT_NATIONAL_TEAMS
+    if raw in _CLASH_ALLOWED_CONTEXTS:
+        return raw
+    return _CLASH_ROOT_TOURNAMENTS
+
+
+def _write_clash_submission_snapshot(
+    *,
+    full_name: str,
+    group_number: str,
+    supercell_id: str,
+    telegram_user_id: int,
+    context: str,
+) -> int:
+    context_norm = normalize_clash_context(context)
+    timestamp_ms = int(time.time() * 1000)
+    path = f"{context_norm}/clash_royale/{telegram_user_id}/{timestamp_ms}.json"
+    payload = {
+        "tg_id": telegram_user_id,
+        "clash_royale_id": supercell_id,
+        "full_name": full_name,
+        "group_number": group_number,
+        "timestamp_ms": timestamp_ms,
+    }
+
+    if _use_blob_backend():
+        try:
+            from vercel.blob import put
+
+            put(
+                path,
+                json.dumps(payload, ensure_ascii=False).encode("utf-8"),
+                access="private",
+                add_random_suffix=False,
+                content_type="application/json",
+            )
+        except Exception as exc:
+            raise RuntimeError(f"Clash snapshot write failed: {exc}") from exc
+    else:
+        out_path = Path(__file__).parent / context_norm / "clash_royale" / str(telegram_user_id) / f"{timestamp_ms}.json"
+        out_path.parent.mkdir(parents=True, exist_ok=True)
+        out_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    return timestamp_ms
 
 
 def _get_connection() -> sqlite3.Connection:
@@ -77,11 +131,12 @@ def init_db() -> None:
             """
             CREATE TABLE IF NOT EXISTS clash_registrations (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                context TEXT NOT NULL DEFAULT 'tournaments',
                 full_name TEXT NOT NULL,
                 group_number TEXT NOT NULL,
-                supercell_id TEXT NOT NULL UNIQUE,
-                telegram_user_id INTEGER UNIQUE,
-                telegram_username TEXT UNIQUE,
+                supercell_id TEXT NOT NULL,
+                telegram_user_id INTEGER,
+                telegram_username TEXT,
                 created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
             )
@@ -92,9 +147,50 @@ def init_db() -> None:
             conn.execute("ALTER TABLE clash_registrations ADD COLUMN telegram_user_id INTEGER")
         if "telegram_username" not in columns:
             conn.execute("ALTER TABLE clash_registrations ADD COLUMN telegram_username TEXT")
-        conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS ux_clash_supercell_id ON clash_registrations(supercell_id)")
-        conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS ux_clash_user_id ON clash_registrations(telegram_user_id)")
-        conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS ux_clash_username ON clash_registrations(telegram_username)")
+        if "context" not in columns:
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS clash_registrations_new (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    context TEXT NOT NULL DEFAULT 'tournaments',
+                    full_name TEXT NOT NULL,
+                    group_number TEXT NOT NULL,
+                    supercell_id TEXT NOT NULL,
+                    telegram_user_id INTEGER,
+                    telegram_username TEXT,
+                    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+                )
+                """
+            )
+            conn.execute(
+                """
+                INSERT INTO clash_registrations_new (
+                    id, context, full_name, group_number, supercell_id, telegram_user_id, telegram_username, created_at, updated_at
+                )
+                SELECT
+                    id, 'tournaments', full_name, group_number, supercell_id, telegram_user_id, telegram_username, created_at, updated_at
+                FROM clash_registrations
+                """
+            )
+            conn.execute("DROP TABLE clash_registrations")
+            conn.execute("ALTER TABLE clash_registrations_new RENAME TO clash_registrations")
+
+        conn.execute("DROP INDEX IF EXISTS ux_clash_supercell_id")
+        conn.execute("DROP INDEX IF EXISTS ux_clash_user_id")
+        conn.execute("DROP INDEX IF EXISTS ux_clash_username")
+        conn.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS ux_clash_context_supercell_id "
+            "ON clash_registrations(context, supercell_id)"
+        )
+        conn.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS ux_clash_context_user_id "
+            "ON clash_registrations(context, telegram_user_id) WHERE telegram_user_id IS NOT NULL"
+        )
+        conn.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS ux_clash_context_username "
+            "ON clash_registrations(context, telegram_username) WHERE telegram_username IS NOT NULL"
+        )
         conn.commit()
 
 
@@ -193,18 +289,20 @@ def get_registration(user_id: int) -> dict[str, Any] | None:
 def get_clash_registration(
     telegram_user_id: int | None = None,
     telegram_username: str | None = None,
+    context: str = "tournaments",
 ) -> dict[str, Any] | None:
+    context_norm = normalize_clash_context(context)
     username_norm = telegram_username.strip().lower().lstrip("@") if telegram_username else None
 
     with _get_connection() as conn:
         if telegram_user_id is not None:
             row = conn.execute(
                 """
-                SELECT full_name, group_number, supercell_id, telegram_user_id, telegram_username, created_at, updated_at
+                SELECT context, full_name, group_number, supercell_id, telegram_user_id, telegram_username, created_at, updated_at
                 FROM clash_registrations
-                WHERE telegram_user_id = ?
+                WHERE context = ? AND telegram_user_id = ?
                 """,
-                (telegram_user_id,),
+                (context_norm, telegram_user_id),
             ).fetchone()
             if row:
                 return dict(row)
@@ -212,11 +310,11 @@ def get_clash_registration(
         if username_norm:
             row = conn.execute(
                 """
-                SELECT full_name, group_number, supercell_id, telegram_user_id, telegram_username, created_at, updated_at
+                SELECT context, full_name, group_number, supercell_id, telegram_user_id, telegram_username, created_at, updated_at
                 FROM clash_registrations
-                WHERE telegram_username = ?
+                WHERE context = ? AND telegram_username = ?
                 """,
-                (username_norm,),
+                (context_norm, username_norm),
             ).fetchone()
             if row:
                 return dict(row)
@@ -230,8 +328,10 @@ def upsert_clash_registration(
     supercell_id: str,
     telegram_user_id: int | None = None,
     telegram_username: str | None = None,
+    context: str = "tournaments",
     allow_update: bool = False,
 ) -> str:
+    context_norm = normalize_clash_context(context)
     full_name_norm = full_name.strip()
     group_number_norm = group_number.strip()
     supercell_id_norm = supercell_id.strip().upper()
@@ -249,27 +349,27 @@ def upsert_clash_registration(
                 """
                 SELECT id
                 FROM clash_registrations
-                WHERE telegram_user_id = ?
+                WHERE context = ? AND telegram_user_id = ?
                 """,
-                (telegram_user_id,),
+                (context_norm, telegram_user_id),
             ).fetchone()
         if not existing_by_identity and username_norm:
             existing_by_identity = conn.execute(
                 """
                 SELECT id
                 FROM clash_registrations
-                WHERE telegram_username = ?
+                WHERE context = ? AND telegram_username = ?
                 """,
-                (username_norm,),
+                (context_norm, username_norm),
             ).fetchone()
 
         existing_by_supercell = conn.execute(
             """
             SELECT id, telegram_user_id, telegram_username
             FROM clash_registrations
-            WHERE supercell_id = ?
+            WHERE context = ? AND supercell_id = ?
             """,
-            (supercell_id_norm,),
+            (context_norm, supercell_id_norm),
         ).fetchone()
 
         if existing_by_supercell:
@@ -309,6 +409,13 @@ def upsert_clash_registration(
                 ),
             )
             conn.commit()
+            _write_clash_submission_snapshot(
+                full_name=full_name_norm,
+                group_number=group_number_norm,
+                supercell_id=supercell_id_norm,
+                telegram_user_id=telegram_user_id,
+                context=context_norm,
+            )
             return "updated"
 
         if allow_update:
@@ -317,15 +424,23 @@ def upsert_clash_registration(
         conn.execute(
             """
             INSERT INTO clash_registrations (
+                context,
                 full_name,
                 group_number,
                 supercell_id,
                 telegram_user_id,
                 telegram_username
             )
-            VALUES (?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?)
             """,
-            (full_name_norm, group_number_norm, supercell_id_norm, telegram_user_id, username_norm),
+            (context_norm, full_name_norm, group_number_norm, supercell_id_norm, telegram_user_id, username_norm),
         )
         conn.commit()
+        _write_clash_submission_snapshot(
+            full_name=full_name_norm,
+            group_number=group_number_norm,
+            supercell_id=supercell_id_norm,
+            telegram_user_id=telegram_user_id,
+            context=context_norm,
+        )
         return "created"

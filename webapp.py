@@ -11,6 +11,7 @@ from db import (
     get_clash_registration,
     get_registration,
     init_db,
+    normalize_clash_context,
     upsert_clash_registration,
     upsert_registration,
 )
@@ -564,7 +565,7 @@ HTML_TEMPLATE = """
           sidebarTitle: "Navigation",
           settingsTitle: "Settings",
           navMain: "Home",
-          navHome: "Teams",
+          navHome: "National teams",
           navClash: "Tournaments",
           navCs2: "Achievements",
           navDota: "Achievements",
@@ -879,7 +880,7 @@ GAMES_TEMPLATE = """
         en: {
           pageTitle: "Disciplines",
           backToMain: "← Home",
-          modeTeams: "Teams",
+          modeTeams: "National teams",
           modeTournaments: "Tournaments",
           disciplinesTitle: "Game disciplines",
           wotTitle: "WORLD OF TANKS",
@@ -1332,11 +1333,11 @@ DISCIPLINE_TEMPLATE = """
         },
         en: {
           backToDisciplines: "← Back to disciplines",
-          modeTeams: "Teams",
+          modeTeams: "National teams",
           modeTournaments: "Tournaments",
-          actionTeams: "Apply to team",
+          actionTeams: "Apply to national team",
           actionTournaments: "Register for tournament",
-          teamFormTitle: "Team application",
+          teamFormTitle: "National team application",
           close: "Close",
           fullName: "Full name",
           fullNamePlaceholder: "John Doe",
@@ -1642,6 +1643,46 @@ CLASH_TEMPLATE = """
       .hidden {
         display: none !important;
       }
+
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.46);
+        z-index: 50;
+        display: grid;
+        place-items: center;
+        padding: 16px;
+      }
+
+      .modal {
+        width: min(640px, 100%);
+        border-radius: 14px;
+        border: 1px solid var(--panel-line);
+        background: var(--panel);
+        padding: 16px;
+      }
+
+      .modal-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+
+      .modal-top h2 {
+        margin: 0;
+        font-size: clamp(20px, 3vw, 28px);
+      }
+
+      .close-modal-btn {
+        border: 1px solid var(--panel-line);
+        background: transparent;
+        color: var(--text);
+        border-radius: 8px;
+        width: 34px;
+        height: 34px;
+        cursor: pointer;
+      }
     </style>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
   </head>
@@ -1656,35 +1697,40 @@ CLASH_TEMPLATE = """
         <section id="entry-stage" class="entry-stage">
           <button id="open-form-btn" class="submit-btn entry-btn" type="button">Зарегистрироваться на турнир</button>
         </section>
-
-        <section id="form-stage" class="hidden">
-          <h1 id="form-title">Регистрация</h1>
-          <p id="form-subtitle" class="subtitle">Заполни данные для регистрации на дисциплину.</p>
-
-          <div id="existing-action" class="existing-action hidden">
-            <button id="edit-existing-btn" class="submit-btn" type="button">Изменить данные в регистрации</button>
-          </div>
-
-          <form id="clash-form" class="form">
-            <div>
-              <label id="full-name-label" for="full-name">ФИО</label>
-              <input id="full-name" name="full_name" type="text" maxlength="140" placeholder="Иванов Иван Иванович" required />
-            </div>
-            <div>
-              <label id="group-number-label" for="group-number">Номер группы</label>
-              <input id="group-number" name="group_number" type="text" maxlength="60" placeholder="БИ-22-1" required />
-            </div>
-            <div>
-              <label id="supercell-id-label" for="supercell-id">SUPERCELL ID</label>
-              <input id="supercell-id" name="supercell_id" type="text" maxlength="40" placeholder="#2ABCDEF9" required />
-            </div>
-            <button id="submit-btn" class="submit-btn" type="submit">Зарегистрироваться</button>
-          </form>
-
-          <div id="status" class="status"></div>
-        </section>
       </section>
     </main>
+
+    <div id="clash-modal-backdrop" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="form-title">
+      <section class="modal">
+        <div class="modal-top">
+          <h2 id="form-title">Регистрация</h2>
+          <button id="close-modal-btn" class="close-modal-btn" type="button" aria-label="Закрыть">x</button>
+        </div>
+        <p id="form-subtitle" class="subtitle">Заполни данные для регистрации на дисциплину.</p>
+
+        <div id="existing-action" class="existing-action hidden">
+          <button id="edit-existing-btn" class="submit-btn" type="button">Изменить данные в регистрации</button>
+        </div>
+
+        <form id="clash-form" class="form">
+          <div>
+            <label id="full-name-label" for="full-name">ФИО</label>
+            <input id="full-name" name="full_name" type="text" maxlength="140" placeholder="Иванов Иван Иванович" required />
+          </div>
+          <div>
+            <label id="group-number-label" for="group-number">Номер группы</label>
+            <input id="group-number" name="group_number" type="text" maxlength="60" placeholder="БИ-22-1" required />
+          </div>
+          <div>
+            <label id="supercell-id-label" for="supercell-id">SUPERCELL ID</label>
+            <input id="supercell-id" name="supercell_id" type="text" maxlength="40" placeholder="#2ABCDEF9" required />
+          </div>
+          <button id="submit-btn" class="submit-btn" type="submit">Зарегистрироваться</button>
+        </form>
+
+        <div id="status" class="status"></div>
+      </section>
+    </div>
 
     <script>
       const tg = window.Telegram?.WebApp;
@@ -1700,6 +1746,7 @@ CLASH_TEMPLATE = """
           backToMain: "← На главную",
           entryTournament: "Зарегистрироваться на турнир",
           entryTeams: "Подать заявку в сборную",
+          close: "Закрыть",
           titleTournament: "Регистрация на турнир",
           titleTeams: "Подача заявления в сборную",
           subtitleTournament: "Заполни данные для регистрации на турнир.",
@@ -1724,11 +1771,12 @@ CLASH_TEMPLATE = """
           pageTitle: "Clash Royale Registration",
           backToMain: "← Home",
           entryTournament: "Register for tournament",
-          entryTeams: "Apply to team",
+          entryTeams: "Apply to national team",
+          close: "Close",
           titleTournament: "Tournament registration",
-          titleTeams: "Team application",
+          titleTeams: "National team application",
           subtitleTournament: "Fill in the details for tournament registration.",
-          subtitleTeams: "Fill in the details for the team application.",
+          subtitleTeams: "Fill in the details for the national team application.",
           editRegistration: "Edit registration details",
           fullName: "Full name",
           groupNumber: "Group number",
@@ -1757,7 +1805,8 @@ CLASH_TEMPLATE = """
       const editExistingBtn = document.getElementById("edit-existing-btn");
       const entryStage = document.getElementById("entry-stage");
       const openFormBtn = document.getElementById("open-form-btn");
-      const formStage = document.getElementById("form-stage");
+      const modalBackdrop = document.getElementById("clash-modal-backdrop");
+      const closeModalBtn = document.getElementById("close-modal-btn");
       const formTitle = document.getElementById("form-title");
       const formSubtitle = document.getElementById("form-subtitle");
       const backBtn = document.getElementById("back-btn");
@@ -1775,6 +1824,7 @@ CLASH_TEMPLATE = """
       let registrationBootstrapped = false;
       const contextParam = new URLSearchParams(window.location.search).get("context");
       const isTournamentFlow = contextParam === "tournaments";
+      const contextKey = isTournamentFlow ? "tournaments" : "national_teams";
       const primaryActionLabel = isTournamentFlow
         ? text.entryTournament
         : text.entryTeams;
@@ -1816,6 +1866,9 @@ CLASH_TEMPLATE = """
       }
       if (supercellIdInput) {
         supercellIdInput.placeholder = text.supercellIdPlaceholder;
+      }
+      if (closeModalBtn) {
+        closeModalBtn.setAttribute("aria-label", text.close);
       }
 
       const safeTheme = localStorage.getItem("cyber_theme") || "dark";
@@ -1933,14 +1986,12 @@ CLASH_TEMPLATE = """
         }
       }
 
-      function showEntryStage() {
-        entryStage.classList.remove("hidden");
-        formStage.classList.add("hidden");
+      function openModal() {
+        modalBackdrop.classList.remove("hidden");
       }
 
-      function showFormStage() {
-        entryStage.classList.add("hidden");
-        formStage.classList.remove("hidden");
+      function closeModal() {
+        modalBackdrop.classList.add("hidden");
       }
 
       async function loadExistingRegistration() {
@@ -1953,6 +2004,7 @@ CLASH_TEMPLATE = """
 
         const query = new URLSearchParams();
         query.set("telegram_user_id", String(telegramUserId));
+        query.set("context", contextKey);
         if (telegramUsername) {
           query.set("telegram_username", telegramUsername);
         }
@@ -1998,6 +2050,7 @@ CLASH_TEMPLATE = """
           supercell_id: document.getElementById("supercell-id").value.trim(),
           telegram_user_id: telegramUserId,
           telegram_username: telegramUsername,
+          context: contextKey,
           allow_update: updateMode,
         };
 
@@ -2035,7 +2088,6 @@ CLASH_TEMPLATE = """
 
       editExistingBtn.addEventListener("click", () => {
         updateMode = true;
-        showFormStage();
         setExistingView(false);
         syncButtonText();
         setStatus(text.editHint);
@@ -2063,15 +2115,23 @@ CLASH_TEMPLATE = """
       }
 
       openFormBtn.addEventListener("click", async () => {
-        showFormStage();
+        openModal();
+        setStatus("");
         syncButtonText();
         setExistingView(false);
         await initRegistrationPage();
       });
 
+      closeModalBtn.addEventListener("click", closeModal);
+      modalBackdrop.addEventListener("click", (event) => {
+        if (event.target === modalBackdrop) {
+          closeModal();
+        }
+      });
+
       syncButtonText();
       setExistingView(false);
-      showEntryStage();
+      entryStage.classList.remove("hidden");
     </script>
   </body>
 </html>
@@ -2098,6 +2158,7 @@ class ClashRoyaleRegistrationRequest(BaseModel):
     supercell_id: str
     telegram_user_id: int | None = None
     telegram_username: str | None = None
+    context: str = "tournaments"
     allow_update: bool = False
 
 
@@ -2149,11 +2210,16 @@ async def clash_royale_page(request: Request) -> HTMLResponse:
 async def clash_royale_registration(
     telegram_user_id: int | None = None,
     telegram_username: str | None = None,
+    context: str = "tournaments",
 ) -> dict[str, object]:
     if getattr(app.state, "db_error", None):
         raise HTTPException(status_code=503, detail=f"DB is unavailable: {app.state.db_error}")
 
-    data = get_clash_registration(telegram_user_id=telegram_user_id, telegram_username=telegram_username)
+    data = get_clash_registration(
+        telegram_user_id=telegram_user_id,
+        telegram_username=telegram_username,
+        context=normalize_clash_context(context),
+    )
     return {"registration": data}
 
 
@@ -2185,6 +2251,7 @@ async def clash_royale_register(payload: ClashRoyaleRegistrationRequest) -> dict
     supercell_id = payload.supercell_id.strip().upper()
     telegram_user_id = payload.telegram_user_id
     telegram_username = payload.telegram_username.strip() if payload.telegram_username else None
+    context = normalize_clash_context(payload.context)
 
     if len(full_name) < 5:
         raise HTTPException(status_code=400, detail="Укажи корректное ФИО.")
@@ -2200,6 +2267,7 @@ async def clash_royale_register(payload: ClashRoyaleRegistrationRequest) -> dict
             supercell_id=supercell_id,
             telegram_user_id=telegram_user_id,
             telegram_username=telegram_username,
+            context=context,
             allow_update=payload.allow_update,
         )
     except ValueError as exc:
