@@ -1695,7 +1695,14 @@ CLASH_TEMPLATE = """
         </div>
 
         <section id="entry-stage" class="entry-stage">
-          <button id="open-form-btn" class="submit-btn entry-btn" type="button">Зарегистрироваться на турнир</button>
+          <button
+            id="open-form-btn"
+            class="submit-btn entry-btn"
+            type="button"
+            onclick="window.__clashModalShow && window.__clashModalShow()"
+          >
+            Зарегистрироваться на турнир
+          </button>
         </section>
       </section>
     </main>
@@ -1704,7 +1711,15 @@ CLASH_TEMPLATE = """
       <section class="modal">
         <div class="modal-top">
           <h2 id="form-title">Регистрация</h2>
-          <button id="close-modal-btn" class="close-modal-btn" type="button" aria-label="Закрыть">x</button>
+          <button
+            id="close-modal-btn"
+            class="close-modal-btn"
+            type="button"
+            aria-label="Закрыть"
+            onclick="window.__clashModalHide && window.__clashModalHide()"
+          >
+            x
+          </button>
         </div>
         <p id="form-subtitle" class="subtitle">Заполни данные для регистрации на дисциплину.</p>
 
@@ -1731,6 +1746,44 @@ CLASH_TEMPLATE = """
         <div id="status" class="status"></div>
       </section>
     </div>
+
+    <script>
+      (() => {
+        const modal = document.getElementById("clash-modal-backdrop");
+        const openBtn = document.getElementById("open-form-btn");
+        const closeBtn = document.getElementById("close-modal-btn");
+        if (!modal) {
+          return;
+        }
+
+        function showModalFallback() {
+          modal.classList.remove("hidden");
+          modal.hidden = false;
+          modal.style.display = "grid";
+        }
+
+        function hideModalFallback() {
+          modal.classList.add("hidden");
+          modal.hidden = true;
+          modal.style.display = "none";
+        }
+
+        window.__clashModalShow = showModalFallback;
+        window.__clashModalHide = hideModalFallback;
+
+        if (openBtn) {
+          openBtn.addEventListener("click", showModalFallback);
+        }
+        if (closeBtn) {
+          closeBtn.addEventListener("click", hideModalFallback);
+        }
+        modal.addEventListener("click", (event) => {
+          if (event.target === modal) {
+            hideModalFallback();
+          }
+        });
+      })();
+    </script>
 
     <script>
       const tg = window.Telegram?.WebApp;
