@@ -44,7 +44,13 @@ HTML_TEMPLATE = """
         --panel-line: rgba(255, 255, 255, 0.16);
         --muted: #bac6d8;
         --link: #a8ccff;
-        --top-control-size: 52px;
+        --top-button-size: 44px;
+        --top-logo-size: 58px;
+        --top-control-bg: #151f31;
+        --top-control-border: rgba(255, 255, 255, 0.24);
+        --top-control-icon: #e7edf9;
+        --top-logo-bg: #04080f;
+        --top-logo-border: rgba(255, 255, 255, 0.22);
       }
 
       body.theme-light {
@@ -54,6 +60,11 @@ HTML_TEMPLATE = """
         --panel-line: rgba(15, 23, 42, 0.16);
         --muted: #5a6678;
         --link: #2058cc;
+        --top-control-bg: #d7d7d7;
+        --top-control-border: rgba(15, 23, 42, 0.28);
+        --top-control-icon: #2f3642;
+        --top-logo-bg: #f5f7fa;
+        --top-logo-border: rgba(15, 23, 42, 0.2);
       }
 
       * {
@@ -85,68 +96,63 @@ HTML_TEMPLATE = """
         position: fixed;
         top: 14px;
         z-index: 40;
-        width: var(--top-control-size);
-        height: var(--top-control-size);
+        width: var(--top-button-size);
+        height: var(--top-button-size);
         display: inline-grid;
         place-items: center;
-        border: 1px solid var(--panel-line);
-        background: var(--panel);
-        color: var(--text);
-        border-radius: 10px;
+        border: 1px solid var(--top-control-border);
+        background: var(--top-control-bg);
+        color: var(--top-control-icon);
+        border-radius: 12px;
         cursor: pointer;
       }
 
       .menu-toggle {
         left: 14px;
         padding: 0;
-        background: #d7d7d7;
-        border: 0;
       }
 
       .settings-toggle {
         right: 14px;
-        border: 0;
-        background: #d7d7d7;
-        color: #3d3d3d;
-        font-size: 20px;
+        font-size: 19px;
       }
 
       .menu-icon {
-        width: 30px;
-        height: 30px;
-        border: 3px solid #222222;
-        border-radius: 11px;
-        padding: 5px 4px;
+        width: 24px;
+        height: 24px;
+        border: 2.5px solid var(--top-control-icon);
+        border-radius: 9px;
+        padding: 4px 3px;
         display: grid;
         align-content: space-between;
       }
 
       .menu-icon .bar {
         display: block;
-        height: 3px;
+        height: 2.5px;
         border-radius: 999px;
-        background: #222222;
+        background: var(--top-control-icon);
       }
 
       .top-logo-badge {
         position: fixed;
-        top: 14px;
+        top: 7px;
         left: 50%;
         transform: translateX(-50%);
         z-index: 40;
-        width: var(--top-control-size);
-        height: var(--top-control-size);
+        width: var(--top-logo-size);
+        height: var(--top-logo-size);
         border-radius: 50%;
-        background: #03050a;
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: var(--top-logo-bg);
+        border: 1px solid var(--top-logo-border);
         display: grid;
         place-items: center;
         pointer-events: none;
       }
 
       .top-logo-badge img {
-        width: calc(var(--top-control-size) - 16px);
-        height: calc(var(--top-control-size) - 16px);
+        width: calc(var(--top-logo-size) - 14px);
+        height: calc(var(--top-logo-size) - 14px);
         border-radius: 50%;
         object-fit: cover;
       }
