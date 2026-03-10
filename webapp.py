@@ -46,7 +46,7 @@ HTML_TEMPLATE = """
         --link: #a8ccff;
         --top-button-size: 44px;
         --top-logo-size: 58px;
-        --top-control-bg: #151f31;
+        --top-control-bg: #0c1a34;
         --top-control-border: rgba(255, 255, 255, 0.24);
         --top-control-icon: #e7edf9;
         --top-logo-bg: #04080f;
@@ -114,7 +114,8 @@ HTML_TEMPLATE = """
 
       .settings-toggle {
         right: 14px;
-        font-size: 19px;
+        font-size: 24px;
+        line-height: 1;
       }
 
       .menu-icon {
