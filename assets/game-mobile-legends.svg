@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 210" role="img" aria-label="Mobile Legends">
+  <defs>
+    <linearGradient id="mlg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f46a2d"/>
+      <stop offset="50%" stop-color="#f9ab2f"/>
+      <stop offset="100%" stop-color="#ff5f45"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="210" fill="#ebebeb"/>
+  <path d="M20 90l30-44 43 1-29 42 18 73-31 1-17-68z" fill="url(#mlg)"/>
+  <path d="M101 55h35l-1 31h26l1 21h-27l1 31h-35l-1-31H74V86h26z" fill="url(#mlg)"/>
+  <text x="118" y="96" fill="url(#mlg)" font-size="42" font-family="Impact, Arial Black, sans-serif">MOBILE</text>
+  <text x="82" y="140" fill="url(#mlg)" font-size="48" font-family="Impact, Arial Black, sans-serif">LEGENDS</text>
+  <text x="128" y="176" fill="#de7436" font-size="24" font-family="Arial, Helvetica, sans-serif" letter-spacing="4">BANG BANG</text>
+</svg>

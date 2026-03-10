@@ -341,6 +341,40 @@ HTML_TEMPLATE = """
         background: #ffffff;
       }
 
+      .games-hub {
+        width: min(880px, calc(100% - 24px));
+        margin: 14px auto 0;
+        display: grid;
+        gap: 10px;
+      }
+
+      .games-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border: 1px solid var(--panel-line);
+        background: var(--panel);
+        border-radius: 12px;
+        padding: 8px;
+        text-decoration: none;
+        color: var(--text);
+      }
+
+      .games-thumb {
+        width: 76px;
+        height: 50px;
+        border-radius: 9px;
+        object-fit: cover;
+        flex-shrink: 0;
+        background: #0a1020;
+      }
+
+      .games-label {
+        font-size: clamp(16px, 2.6vw, 25px);
+        font-weight: 700;
+        line-height: 1.1;
+      }
+
       .contacts-inline {
         padding: 18px 16px 8px;
       }
@@ -363,6 +397,11 @@ HTML_TEMPLATE = """
       @media (max-width: 680px) {
         .carousel {
           min-height: 220px;
+        }
+
+        .games-thumb {
+          width: 70px;
+          height: 46px;
         }
 
         .contacts-inline h2 {
@@ -396,11 +435,11 @@ HTML_TEMPLATE = """
         <button id="close-menu" class="close-btn" type="button" aria-label="Закрыть">x</button>
       </div>
       <nav class="nav-list">
-        <a href="#top-banner" class="nav-link active">
+        <a href="#games-hub" class="nav-link active">
           <span class="nav-icon">SB</span>
           <span data-i18n="navHome">Сборные</span>
         </a>
-        <a href="#top-banner" class="nav-link">
+        <a href="#games-hub" class="nav-link">
           <span class="nav-icon">TR</span>
           <span data-i18n="navClash">Турниры</span>
         </a>
@@ -448,6 +487,29 @@ HTML_TEMPLATE = """
           <button class="dot" type="button" data-index="1" aria-label="Баннер 2"></button>
           <button class="dot" type="button" data-index="2" aria-label="Баннер 3"></button>
         </div>
+      </section>
+
+      <section id="games-hub" class="games-hub" aria-label="Игровые дисциплины">
+        <a class="games-link" href="#games-hub">
+          <img class="games-thumb" src="/assets/game-cs2.svg" alt="Counter Strike 2" />
+          <span class="games-label">COUNTER STRIKE 2</span>
+        </a>
+        <a class="games-link" href="#games-hub">
+          <img class="games-thumb" src="/assets/game-dota2.svg" alt="Dota 2" />
+          <span class="games-label">DOTA 2</span>
+        </a>
+        <a class="games-link" href="/clash-royale">
+          <img class="games-thumb" src="/assets/game-clash-royale.svg" alt="Clash Royale" />
+          <span class="games-label">CLASH ROYALE</span>
+        </a>
+        <a class="games-link" href="#games-hub">
+          <img class="games-thumb" src="/assets/game-mobile-legends.svg" alt="Mobile Legends" />
+          <span class="games-label">MOBILE LEGENDS</span>
+        </a>
+        <a class="games-link" href="#games-hub">
+          <img class="games-thumb" src="/assets/game-mir-tankov.svg" alt="Мир Танков" />
+          <span class="games-label">МИР ТАНКОВ</span>
+        </a>
       </section>
 
       <section id="contacts" class="contacts-inline">

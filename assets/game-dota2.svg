@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 210" role="img" aria-label="Dota 2">
+  <rect width="320" height="210" fill="#1c1c1c"/>
+  <rect x="72" y="12" width="176" height="158" rx="16" fill="#d41414"/>
+  <path d="M93 39h133l-11 18 10 78-17 15-112-1 10-65-13-15z" fill="#ff2424"/>
+  <path d="M111 55l98 71-16 17-95-71z" fill="#1a1a1a"/>
+  <path d="M173 62l27 18-7 32-27-20z" fill="#1a1a1a"/>
+  <path d="M111 95l35 27-28 16-23-15z" fill="#1a1a1a"/>
+  <text x="53" y="196" fill="#efefef" font-size="54" font-family="Georgia, 'Times New Roman', serif" letter-spacing="2">DOTA 2</text>
+</svg>
