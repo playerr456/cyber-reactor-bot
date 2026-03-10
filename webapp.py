@@ -45,12 +45,12 @@ HTML_TEMPLATE = """
         --muted: #bac6d8;
         --link: #a8ccff;
         --top-button-size: 44px;
-        --top-logo-size: 58px;
+        --top-logo-size: 64px;
         --top-control-bg: #0c1a34;
         --top-control-border: rgba(255, 255, 255, 0.24);
         --top-control-icon: #e7edf9;
-        --top-logo-bg: #04080f;
-        --top-logo-border: rgba(255, 255, 255, 0.22);
+        --top-logo-bg: #000000;
+        --top-logo-border: rgba(255, 255, 255, 0.08);
       }
 
       body.theme-light {
@@ -63,8 +63,8 @@ HTML_TEMPLATE = """
         --top-control-bg: #d7d7d7;
         --top-control-border: rgba(15, 23, 42, 0.28);
         --top-control-icon: #2f3642;
-        --top-logo-bg: #f5f7fa;
-        --top-logo-border: rgba(15, 23, 42, 0.2);
+        --top-logo-bg: #000000;
+        --top-logo-border: rgba(15, 23, 42, 0.35);
       }
 
       * {
@@ -114,8 +114,14 @@ HTML_TEMPLATE = """
 
       .settings-toggle {
         right: 14px;
-        font-size: 24px;
+        padding: 0;
+      }
+
+      .settings-icon {
+        display: block;
+        font-size: 27px;
         line-height: 1;
+        transform: translateY(-1px);
       }
 
       .menu-icon {
@@ -137,7 +143,7 @@ HTML_TEMPLATE = """
 
       .top-logo-badge {
         position: fixed;
-        top: 7px;
+        top: 4px;
         left: 50%;
         transform: translateX(-50%);
         z-index: 40;
@@ -152,8 +158,8 @@ HTML_TEMPLATE = """
       }
 
       .top-logo-badge img {
-        width: calc(var(--top-logo-size) - 14px);
-        height: calc(var(--top-logo-size) - 14px);
+        width: calc(var(--top-logo-size) - 2px);
+        height: calc(var(--top-logo-size) - 2px);
         border-radius: 50%;
         object-fit: cover;
       }
@@ -378,7 +384,10 @@ HTML_TEMPLATE = """
     <div class="top-logo-badge" aria-hidden="true">
       <img src="/assets/logo.jpg" alt="" />
     </div>
-    <button id="settings-toggle" class="settings-toggle" type="button" aria-label="Настройки">&#9881;</button>
+    <button id="settings-toggle" class="settings-toggle" type="button" aria-label="Настройки">
+      <span class="settings-icon" aria-hidden="true">&#9881;</span>
+      <span class="sr-only" data-i18n="settingsTitle">Настройки</span>
+    </button>
     <div id="overlay" class="overlay"></div>
 
     <aside id="sidebar" class="sidebar" aria-hidden="true">
