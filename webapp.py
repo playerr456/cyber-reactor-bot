@@ -1987,11 +1987,21 @@ CLASH_TEMPLATE = """
       }
 
       function openModal() {
+        if (!modalBackdrop) {
+          return;
+        }
         modalBackdrop.classList.remove("hidden");
+        modalBackdrop.hidden = false;
+        modalBackdrop.style.display = "grid";
       }
 
       function closeModal() {
+        if (!modalBackdrop) {
+          return;
+        }
         modalBackdrop.classList.add("hidden");
+        modalBackdrop.hidden = true;
+        modalBackdrop.style.display = "none";
       }
 
       async function loadExistingRegistration() {
@@ -2114,17 +2124,29 @@ CLASH_TEMPLATE = """
         }
       }
 
-      openFormBtn.addEventListener("click", async () => {
-        openModal();
-        setStatus("");
-        syncButtonText();
-        setExistingView(false);
-        await initRegistrationPage();
-      });
+      if (openFormBtn) {
+        openFormBtn.addEventListener("click", async () => {
+          openModal();
+          setStatus("");
+          syncButtonText();
+          setExistingView(false);
+          await initRegistrationPage();
+        });
+      }
 
-      closeModalBtn.addEventListener("click", closeModal);
-      modalBackdrop.addEventListener("click", (event) => {
-        if (event.target === modalBackdrop) {
+      if (closeModalBtn) {
+        closeModalBtn.addEventListener("click", closeModal);
+      }
+      if (modalBackdrop) {
+        modalBackdrop.addEventListener("click", (event) => {
+          if (event.target === modalBackdrop) {
+            closeModal();
+          }
+        });
+      }
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
           closeModal();
         }
       });
@@ -2132,6 +2154,7 @@ CLASH_TEMPLATE = """
       syncButtonText();
       setExistingView(false);
       entryStage.classList.remove("hidden");
+      closeModal();
     </script>
   </body>
 </html>
