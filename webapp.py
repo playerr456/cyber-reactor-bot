@@ -110,6 +110,9 @@ HTML_TEMPLATE = """
       .menu-toggle {
         left: 14px;
         padding: 0;
+        border-radius: 50%;
+        background: #d5dae3;
+        border: 1px solid rgba(255, 255, 255, 0.42);
       }
 
       .settings-toggle {
@@ -124,21 +127,21 @@ HTML_TEMPLATE = """
         transform: translateY(-1px);
       }
 
-      .menu-icon {
-        width: 24px;
-        height: 24px;
-        border: 2.5px solid var(--top-control-icon);
-        border-radius: 9px;
-        padding: 4px 3px;
+      .menu-logo-icon {
+        width: 31px;
+        height: 31px;
+        border-radius: 50%;
+        background: #000000;
+        border: 1px solid rgba(255, 255, 255, 0.18);
         display: grid;
-        align-content: space-between;
+        place-items: center;
       }
 
-      .menu-icon .bar {
-        display: block;
-        height: 1.75px;
-        border-radius: 999px;
-        background: var(--top-control-icon);
+      .menu-logo-icon img {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        object-fit: cover;
       }
 
       .top-logo-badge {
@@ -374,10 +377,8 @@ HTML_TEMPLATE = """
   </head>
   <body>
     <button id="menu-toggle" class="menu-toggle" type="button" aria-label="Открыть меню">
-      <span class="menu-icon" aria-hidden="true">
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
+      <span class="menu-logo-icon" aria-hidden="true">
+        <img src="/assets/logo.jpg" alt="" />
       </span>
       <span class="sr-only" data-i18n="menuOpen">Открыть меню</span>
     </button>
