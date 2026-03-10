@@ -67,6 +67,18 @@ HTML_TEMPLATE = """
         min-height: 100vh;
       }
 
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
       .menu-toggle,
       .settings-toggle {
         position: fixed;
@@ -81,9 +93,12 @@ HTML_TEMPLATE = """
 
       .menu-toggle {
         left: 14px;
-        padding: 10px 12px;
-        font-size: 14px;
-        font-weight: 700;
+        width: 52px;
+        height: 52px;
+        display: inline-grid;
+        place-items: center;
+        background: #d7d7d7;
+        border: 0;
       }
 
       .settings-toggle {
@@ -91,6 +106,69 @@ HTML_TEMPLATE = """
         width: 42px;
         height: 42px;
         font-size: 20px;
+      }
+
+      .menu-icon {
+        position: relative;
+        width: 26px;
+        height: 18px;
+      }
+
+      .menu-icon .line {
+        position: absolute;
+        left: 0;
+        height: 3px;
+        border-radius: 999px;
+        background: #3d3d3d;
+      }
+
+      .menu-icon .line-top {
+        top: 0;
+        width: 20px;
+      }
+
+      .menu-icon .line-middle {
+        top: 7px;
+        width: 13px;
+      }
+
+      .menu-icon .line-bottom {
+        top: 14px;
+        width: 20px;
+      }
+
+      .menu-icon .arrow {
+        position: absolute;
+        right: 0;
+        top: 5px;
+        width: 8px;
+        height: 8px;
+        border-top: 3px solid #3d3d3d;
+        border-right: 3px solid #3d3d3d;
+        transform: rotate(45deg);
+      }
+
+      .top-logo-badge {
+        position: fixed;
+        top: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 40;
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        background: #03050a;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        display: grid;
+        place-items: center;
+        pointer-events: none;
+      }
+
+      .top-logo-badge img {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        object-fit: cover;
       }
 
       .overlay {
@@ -270,71 +348,27 @@ HTML_TEMPLATE = """
         background: #ffffff;
       }
 
-      .brand {
-        display: grid;
-        justify-items: center;
-        gap: 12px;
-        padding: 22px 16px 4px;
-      }
-
-      .brand h1 {
-        margin: 0;
-        font-family: "Bebas Neue", "Arial Narrow", sans-serif;
-        font-size: clamp(52px, 12vw, 96px);
-        letter-spacing: 0.04em;
-        line-height: 0.95;
-      }
-
-      .logo {
-        width: min(240px, 58vw);
-        aspect-ratio: 1 / 1;
-        object-fit: cover;
-        border-radius: 14px;
-        border: 1px solid var(--panel-line);
-      }
-
-      .contacts {
-        margin: 22px auto 0;
-        width: min(680px, calc(100% - 24px));
-        border-radius: 14px;
-        border: 1px solid var(--panel-line);
-        background: var(--panel);
-        padding: 16px 16px 18px;
-      }
-
-      .contacts h2 {
-        margin: 0 0 10px;
-        font-size: 26px;
-      }
-
-      .contacts p {
-        margin: 5px 0;
-        font-size: 17px;
-      }
-
-      .contacts a {
-        color: var(--link);
-        text-decoration: none;
-      }
-
       @media (max-width: 680px) {
         .carousel {
           min-height: 220px;
-        }
-
-        .contacts h2 {
-          font-size: 22px;
-        }
-
-        .contacts p {
-          font-size: 16px;
         }
       }
     </style>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
   </head>
   <body>
-    <button id="menu-toggle" class="menu-toggle" type="button" data-i18n="menuOpen">Киберспортивные дисциплины</button>
+    <button id="menu-toggle" class="menu-toggle" type="button" aria-label="Открыть меню">
+      <span class="menu-icon" aria-hidden="true">
+        <span class="line line-top"></span>
+        <span class="line line-middle"></span>
+        <span class="line line-bottom"></span>
+        <span class="arrow"></span>
+      </span>
+      <span class="sr-only" data-i18n="menuOpen">Открыть меню</span>
+    </button>
+    <div class="top-logo-badge" aria-hidden="true">
+      <img src="/assets/logo.jpg" alt="" />
+    </div>
     <button id="settings-toggle" class="settings-toggle" type="button" aria-label="Настройки">&#9881;</button>
     <div id="overlay" class="overlay"></div>
 
@@ -400,17 +434,6 @@ HTML_TEMPLATE = """
           <button class="dot" type="button" data-index="1" aria-label="Баннер 2"></button>
           <button class="dot" type="button" data-index="2" aria-label="Баннер 3"></button>
         </div>
-      </section>
-
-      <section id="brand" class="brand">
-        <h1 data-i18n="brandTitle">КиберРеаткор</h1>
-        <img class="logo" src="/assets/logo.jpg" alt="Лого КиберРеаткор" />
-      </section>
-
-      <section id="contacts" class="contacts">
-        <h2 data-i18n="feedbackTitle">Обратная связь</h2>
-        <p><span data-i18n="emailLabel">Почта</span>: <a href="mailto:123@gmail.com">123@gmail.com</a></p>
-        <p><span data-i18n="tgLabel">TG</span>: <a href="https://t.me/matve88" target="_blank" rel="noopener">@matve88</a></p>
       </section>
     </main>
 
@@ -483,7 +506,7 @@ HTML_TEMPLATE = """
 
       const I18N = {
         ru: {
-          menuOpen: "Киберспортивные дисциплины",
+          menuOpen: "Открыть меню",
           sidebarTitle: "Навигация",
           settingsTitle: "Настройки",
           navHome: "Главная страница",
@@ -503,7 +526,7 @@ HTML_TEMPLATE = """
           close: "Закрыть",
         },
         en: {
-          menuOpen: "Esports Disciplines",
+          menuOpen: "Open menu",
           sidebarTitle: "Navigation",
           settingsTitle: "Settings",
           navHome: "Home",
@@ -599,6 +622,7 @@ HTML_TEMPLATE = """
 
         closeMenu.setAttribute("aria-label", I18N[safeLang].close);
         closeSettings.setAttribute("aria-label", I18N[safeLang].close);
+        menuToggle.setAttribute("aria-label", I18N[safeLang].menuOpen);
         settingsToggle.setAttribute("aria-label", I18N[safeLang].settingsTitle);
       }
 
