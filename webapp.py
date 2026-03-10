@@ -409,7 +409,7 @@ HTML_TEMPLATE = """
           <span class="nav-icon">TR</span>
           <span data-i18n="navClash">Турниры</span>
         </a>
-        <a href="#top-banner" class="nav-link">
+        <a href="/achievements" class="nav-link">
           <span class="nav-icon">DG</span>
           <span data-i18n="navCs2">Достижения</span>
         </a>
@@ -801,6 +801,12 @@ GAMES_TEMPLATE = """
         flex-shrink: 0;
       }
 
+      .game-thumb.cs2-thumb {
+        width: 82px;
+        height: 52px;
+        padding: 6px;
+      }
+
       body.theme-light .game-thumb {
         background: #edf2fb;
       }
@@ -823,7 +829,7 @@ GAMES_TEMPLATE = """
 
       <section class="games-list">
         <a class="game-link" href="#counter-strike-2">
-          <img class="game-thumb" src="/logos/cs2%20logo.png" alt="Counter Strike 2" />
+          <img class="game-thumb cs2-thumb" src="/logos/cs2%20logo.png" alt="Counter Strike 2" />
           <span class="game-name">COUNTER STRIKE 2</span>
         </a>
         <a class="game-link" href="#dota-2">
@@ -867,6 +873,94 @@ GAMES_TEMPLATE = """
         clashRoyaleLink.href = `/clash-royale?context=${safeMode}`;
       }
 
+      const safeTheme = localStorage.getItem("cyber_theme") || "dark";
+      document.body.classList.toggle("theme-light", safeTheme === "light");
+    </script>
+  </body>
+</html>
+"""
+
+
+ACHIEVEMENTS_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Достижения</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #06080c;
+        --text: #f5f7fa;
+        --panel: #10141d;
+        --panel-line: rgba(255, 255, 255, 0.16);
+        --muted: #bac6d8;
+      }
+
+      body.theme-light {
+        --bg: #f3f5f9;
+        --text: #0f172a;
+        --panel: #ffffff;
+        --panel-line: rgba(15, 23, 42, 0.16);
+        --muted: #5a6678;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      .page {
+        width: min(900px, calc(100% - 24px));
+        margin: 0 auto;
+        padding: 74px 0 28px;
+      }
+
+      .back-link {
+        display: inline-flex;
+        align-items: center;
+        text-decoration: none;
+        color: var(--text);
+        border: 1px solid var(--panel-line);
+        border-radius: 10px;
+        padding: 9px 12px;
+        background: var(--panel);
+        margin-bottom: 16px;
+      }
+
+      .message {
+        font-size: clamp(24px, 5vw, 46px);
+        line-height: 1.15;
+        font-weight: 700;
+      }
+    </style>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  </head>
+  <body>
+    <main class="page">
+      <a class="back-link" href="/">← Главная страница</a>
+      <div class="message">Слишком много добились, не поместится на сайте</div>
+    </main>
+
+    <script>
+      const tg = window.Telegram?.WebApp;
+      if (tg) {
+        tg.ready?.();
+        tg.expand?.();
+      }
       const safeTheme = localStorage.getItem("cyber_theme") || "dark";
       document.body.classList.toggle("theme-light", safeTheme === "light");
     </script>
@@ -1375,6 +1469,11 @@ async def index(request: Request) -> HTMLResponse:
 @app.get("/games", response_class=HTMLResponse)
 async def games_page(request: Request) -> HTMLResponse:
     return HTMLResponse(content=GAMES_TEMPLATE)
+
+
+@app.get("/achievements", response_class=HTMLResponse)
+async def achievements_page(request: Request) -> HTMLResponse:
+    return HTMLResponse(content=ACHIEVEMENTS_TEMPLATE)
 
 
 @app.get("/clash-royale", response_class=HTMLResponse)
