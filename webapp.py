@@ -128,15 +128,15 @@ HTML_TEMPLATE = """
       }
 
       .menu-icon {
-        width: 26px;
-        height: 22px;
+        width: 22px;
+        height: 18px;
         display: grid;
         align-content: space-between;
       }
 
       .menu-icon .bar {
         display: block;
-        height: 4px;
+        height: 3px;
         border-radius: 999px;
         background: var(--top-control-icon);
       }
