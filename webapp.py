@@ -2104,8 +2104,8 @@ CLASH_TEMPLATE = """
           document.getElementById("group-number").value = data.registration.group_number || "";
           document.getElementById("supercell-id").value = data.registration.supercell_id || "";
           hasExistingRegistration = true;
-          updateMode = false;
-          setExistingView(true);
+          updateMode = true;
+          setExistingView(false);
           syncButtonText();
           setStatus("");
         } catch {
@@ -2160,6 +2160,8 @@ CLASH_TEMPLATE = """
         const validationError = validateSubmission(payload);
         if (validationError) {
           setStatus(validationError, true);
+          setExistingView(false);
+          openModal();
           return;
         }
 
@@ -2180,11 +2182,14 @@ CLASH_TEMPLATE = """
 
           setStatus(data.message || text.registrationSaved);
           hasExistingRegistration = true;
-          updateMode = false;
-          setExistingView(true);
+          updateMode = true;
+          setExistingView(false);
           syncButtonText();
+          openModal();
         } catch (error) {
           setStatus(error.message || text.registrationErrorGeneric, true);
+          setExistingView(false);
+          openModal();
         } finally {
           submitBtn.disabled = false;
         }
