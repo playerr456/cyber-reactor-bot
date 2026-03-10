@@ -397,20 +397,16 @@ HTML_TEMPLATE = """
       </div>
       <nav class="nav-list">
         <a href="#top-banner" class="nav-link active">
-          <span class="nav-icon">GP</span>
-          <span data-i18n="navHome">Главная страница</span>
-        </a>
-        <a href="/clash-royale" class="nav-link">
-          <span class="nav-icon">CR</span>
-          <span data-i18n="navClash">CLASH ROYALE</span>
+          <span class="nav-icon">SB</span>
+          <span data-i18n="navHome">Сборные</span>
         </a>
         <a href="#top-banner" class="nav-link">
-          <span class="nav-icon">CS</span>
-          <span data-i18n="navCs2">CS2</span>
+          <span class="nav-icon">TR</span>
+          <span data-i18n="navClash">Турниры</span>
         </a>
         <a href="#top-banner" class="nav-link">
-          <span class="nav-icon">D2</span>
-          <span data-i18n="navDota">Dota 2</span>
+          <span class="nav-icon">DG</span>
+          <span data-i18n="navCs2">Достижения</span>
         </a>
       </nav>
     </aside>
@@ -533,10 +529,10 @@ HTML_TEMPLATE = """
           menuOpen: "Открыть меню",
           sidebarTitle: "Навигация",
           settingsTitle: "Настройки",
-          navHome: "Главная страница",
-          navClash: "CLASH ROYALE",
-          navCs2: "CS2",
-          navDota: "Dota 2",
+          navHome: "Сборные",
+          navClash: "Турниры",
+          navCs2: "Достижения",
+          navDota: "Достижения",
           languageLabel: "Язык",
           themeLabel: "Тема",
           langRu: "Русский",
@@ -553,10 +549,10 @@ HTML_TEMPLATE = """
           menuOpen: "Open menu",
           sidebarTitle: "Navigation",
           settingsTitle: "Settings",
-          navHome: "Home",
-          navClash: "CLASH ROYALE",
-          navCs2: "CS2",
-          navDota: "Dota 2",
+          navHome: "Teams",
+          navClash: "Tournaments",
+          navCs2: "Achievements",
+          navDota: "Achievements",
           languageLabel: "Language",
           themeLabel: "Theme",
           langRu: "Russian",
