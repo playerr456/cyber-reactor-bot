@@ -129,7 +129,7 @@ HTML_TEMPLATE = """
 
       .menu-icon .bar {
         display: block;
-        height: 2.5px;
+        height: 1.75px;
         border-radius: 999px;
         background: var(--top-control-icon);
       }
