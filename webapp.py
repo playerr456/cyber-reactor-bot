@@ -44,6 +44,7 @@ HTML_TEMPLATE = """
         --panel-line: rgba(255, 255, 255, 0.16);
         --muted: #bac6d8;
         --link: #a8ccff;
+        --top-control-size: 52px;
       }
 
       body.theme-light {
@@ -84,6 +85,10 @@ HTML_TEMPLATE = """
         position: fixed;
         top: 14px;
         z-index: 40;
+        width: var(--top-control-size);
+        height: var(--top-control-size);
+        display: inline-grid;
+        place-items: center;
         border: 1px solid var(--panel-line);
         background: var(--panel);
         color: var(--text);
@@ -93,69 +98,44 @@ HTML_TEMPLATE = """
 
       .menu-toggle {
         left: 14px;
-        width: 52px;
-        height: 52px;
-        display: inline-grid;
-        place-items: center;
+        padding: 0;
         background: #d7d7d7;
         border: 0;
       }
 
       .settings-toggle {
         right: 14px;
-        width: 42px;
-        height: 42px;
+        border: 0;
+        background: #d7d7d7;
+        color: #3d3d3d;
         font-size: 20px;
       }
 
       .menu-icon {
-        position: relative;
-        width: 26px;
-        height: 18px;
+        width: 30px;
+        height: 30px;
+        border: 3px solid #222222;
+        border-radius: 11px;
+        padding: 5px 4px;
+        display: grid;
+        align-content: space-between;
       }
 
-      .menu-icon .line {
-        position: absolute;
-        left: 0;
+      .menu-icon .bar {
+        display: block;
         height: 3px;
         border-radius: 999px;
-        background: #3d3d3d;
-      }
-
-      .menu-icon .line-top {
-        top: 0;
-        width: 20px;
-      }
-
-      .menu-icon .line-middle {
-        top: 7px;
-        width: 13px;
-      }
-
-      .menu-icon .line-bottom {
-        top: 14px;
-        width: 20px;
-      }
-
-      .menu-icon .arrow {
-        position: absolute;
-        right: 0;
-        top: 5px;
-        width: 8px;
-        height: 8px;
-        border-top: 3px solid #3d3d3d;
-        border-right: 3px solid #3d3d3d;
-        transform: rotate(45deg);
+        background: #222222;
       }
 
       .top-logo-badge {
         position: fixed;
-        top: 12px;
+        top: 14px;
         left: 50%;
         transform: translateX(-50%);
         z-index: 40;
-        width: 54px;
-        height: 54px;
+        width: var(--top-control-size);
+        height: var(--top-control-size);
         border-radius: 50%;
         background: #03050a;
         border: 1px solid rgba(255, 255, 255, 0.2);
@@ -165,8 +145,8 @@ HTML_TEMPLATE = """
       }
 
       .top-logo-badge img {
-        width: 36px;
-        height: 36px;
+        width: calc(var(--top-control-size) - 16px);
+        height: calc(var(--top-control-size) - 16px);
         border-radius: 50%;
         object-fit: cover;
       }
@@ -348,9 +328,32 @@ HTML_TEMPLATE = """
         background: #ffffff;
       }
 
+      .contacts-inline {
+        padding: 18px 16px 8px;
+      }
+
+      .contacts-inline h2 {
+        margin: 0 0 12px;
+        font-size: clamp(30px, 4vw, 46px);
+      }
+
+      .contacts-inline p {
+        margin: 6px 0;
+        font-size: clamp(20px, 2.4vw, 34px);
+      }
+
+      .contacts-inline a {
+        color: var(--link);
+        text-decoration: none;
+      }
+
       @media (max-width: 680px) {
         .carousel {
           min-height: 220px;
+        }
+
+        .contacts-inline h2 {
+          margin-bottom: 10px;
         }
       }
     </style>
@@ -359,10 +362,9 @@ HTML_TEMPLATE = """
   <body>
     <button id="menu-toggle" class="menu-toggle" type="button" aria-label="Открыть меню">
       <span class="menu-icon" aria-hidden="true">
-        <span class="line line-top"></span>
-        <span class="line line-middle"></span>
-        <span class="line line-bottom"></span>
-        <span class="arrow"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
       </span>
       <span class="sr-only" data-i18n="menuOpen">Открыть меню</span>
     </button>
@@ -434,6 +436,12 @@ HTML_TEMPLATE = """
           <button class="dot" type="button" data-index="1" aria-label="Баннер 2"></button>
           <button class="dot" type="button" data-index="2" aria-label="Баннер 3"></button>
         </div>
+      </section>
+
+      <section id="contacts" class="contacts-inline">
+        <h2 data-i18n="feedbackTitle">Обратная связь</h2>
+        <p><span data-i18n="emailLabel">Почта</span>: <a href="mailto:123@gmail.com">123@gmail.com</a></p>
+        <p><span data-i18n="tgLabel">TG</span>: <a href="https://t.me/matve88" target="_blank" rel="noopener">@matve88</a></p>
       </section>
     </main>
 
