@@ -1293,7 +1293,7 @@ DISCIPLINE_TEMPLATE = """
           </div>
           <div>
             <label id="team-group-number-label" for="team-group-number">Номер группы</label>
-            <input id="team-group-number" type="text" maxlength="60" placeholder="БИ-22-1" required />
+            <input id="team-group-number" type="text" maxlength="60" placeholder="Б25-517" required />
           </div>
           <div>
             <label id="team-game-id-label" for="team-game-id">Игровой ID / Никнейм</label>
@@ -1324,7 +1324,7 @@ DISCIPLINE_TEMPLATE = """
           fullName: "ФИО",
           fullNamePlaceholder: "Иванов Иван Иванович",
           groupNumber: "Номер группы",
-          groupNumberPlaceholder: "БИ-22-1",
+          groupNumberPlaceholder: "Б25-517",
           gameId: "Игровой ID / Никнейм",
           gameIdPlaceholder: "Ник или ID в игре",
           submitTeam: "Отправить заявление",
@@ -1342,7 +1342,7 @@ DISCIPLINE_TEMPLATE = """
           fullName: "Full name",
           fullNamePlaceholder: "John Doe",
           groupNumber: "Group number",
-          groupNumberPlaceholder: "BI-22-1",
+          groupNumberPlaceholder: "Б25-517",
           gameId: "Game ID / Nickname",
           gameIdPlaceholder: "Nickname or in-game ID",
           submitTeam: "Submit application",
@@ -1719,7 +1719,7 @@ CLASH_TEMPLATE = """
           </div>
           <div>
             <label id="group-number-label" for="group-number">Номер группы</label>
-            <input id="group-number" name="group_number" type="text" maxlength="60" placeholder="БИ-22-1" required />
+            <input id="group-number" name="group_number" type="text" maxlength="60" placeholder="Б25-517" required />
           </div>
           <div>
             <label id="supercell-id-label" for="supercell-id">SUPERCELL ID</label>
@@ -1756,7 +1756,7 @@ CLASH_TEMPLATE = """
           groupNumber: "Номер группы",
           supercellId: "SUPERCELL ID",
           fullNamePlaceholder: "Иванов Иван Иванович",
-          groupNumberPlaceholder: "БИ-22-1",
+          groupNumberPlaceholder: "Б25-517",
           supercellIdPlaceholder: "#2ABCDEF9",
           saveChanges: "Сохранить изменения",
           telegramRequired: "Открой мини-приложение из Telegram, чтобы зарегистрироваться.",
@@ -1782,7 +1782,7 @@ CLASH_TEMPLATE = """
           groupNumber: "Group number",
           supercellId: "SUPERCELL ID",
           fullNamePlaceholder: "John Doe",
-          groupNumberPlaceholder: "BI-22-1",
+          groupNumberPlaceholder: "Б25-517",
           supercellIdPlaceholder: "#2ABCDEF9",
           saveChanges: "Save changes",
           telegramRequired: "Open the mini app from Telegram to register.",
