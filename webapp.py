@@ -397,6 +397,10 @@ HTML_TEMPLATE = """
       </div>
       <nav class="nav-list">
         <a href="#top-banner" class="nav-link active">
+          <span class="nav-icon">HM</span>
+          <span data-i18n="navMain">Главная страница</span>
+        </a>
+        <a href="#top-banner" class="nav-link">
           <span class="nav-icon">SB</span>
           <span data-i18n="navHome">Сборные</span>
         </a>
@@ -529,6 +533,7 @@ HTML_TEMPLATE = """
           menuOpen: "Открыть меню",
           sidebarTitle: "Навигация",
           settingsTitle: "Настройки",
+          navMain: "Главная страница",
           navHome: "Сборные",
           navClash: "Турниры",
           navCs2: "Достижения",
@@ -549,6 +554,7 @@ HTML_TEMPLATE = """
           menuOpen: "Open menu",
           sidebarTitle: "Navigation",
           settingsTitle: "Settings",
+          navMain: "Home",
           navHome: "Teams",
           navClash: "Tournaments",
           navCs2: "Achievements",
