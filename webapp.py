@@ -1122,6 +1122,19 @@ CLASH_TEMPLATE = """
         margin-bottom: 12px;
       }
 
+      .entry-stage {
+        min-height: 250px;
+        display: grid;
+        place-items: center;
+        padding: 16px 0;
+      }
+
+      .entry-btn {
+        width: min(340px, 100%);
+        padding: 13px 14px;
+        font-size: 16px;
+      }
+
       .hidden {
         display: none !important;
       }
@@ -1136,30 +1149,36 @@ CLASH_TEMPLATE = """
           <span class="game-tag">CLASH ROYALE</span>
         </div>
 
-        <h1>Регистрация</h1>
-        <p class="subtitle">Заполни данные для регистрации на дисциплину.</p>
+        <section id="entry-stage" class="entry-stage">
+          <button id="open-form-btn" class="submit-btn entry-btn" type="button">Зарегистрироваться на турнир</button>
+        </section>
 
-        <div id="existing-action" class="existing-action hidden">
-          <button id="edit-existing-btn" class="submit-btn" type="button">Изменить данные в регистрации</button>
-        </div>
+        <section id="form-stage" class="hidden">
+          <h1 id="form-title">Регистрация</h1>
+          <p id="form-subtitle" class="subtitle">Заполни данные для регистрации на дисциплину.</p>
 
-        <form id="clash-form" class="form">
-          <div>
-            <label for="full-name">ФИО</label>
-            <input id="full-name" name="full_name" type="text" maxlength="140" placeholder="Иванов Иван Иванович" required />
+          <div id="existing-action" class="existing-action hidden">
+            <button id="edit-existing-btn" class="submit-btn" type="button">Изменить данные в регистрации</button>
           </div>
-          <div>
-            <label for="group-number">Номер группы</label>
-            <input id="group-number" name="group_number" type="text" maxlength="60" placeholder="БИ-22-1" required />
-          </div>
-          <div>
-            <label for="supercell-id">SUPERCELL ID</label>
-            <input id="supercell-id" name="supercell_id" type="text" maxlength="40" placeholder="#2ABCDEF9" required />
-          </div>
-          <button id="submit-btn" class="submit-btn" type="submit">Зарегистрироваться</button>
-        </form>
 
-        <div id="status" class="status"></div>
+          <form id="clash-form" class="form">
+            <div>
+              <label for="full-name">ФИО</label>
+              <input id="full-name" name="full_name" type="text" maxlength="140" placeholder="Иванов Иван Иванович" required />
+            </div>
+            <div>
+              <label for="group-number">Номер группы</label>
+              <input id="group-number" name="group_number" type="text" maxlength="60" placeholder="БИ-22-1" required />
+            </div>
+            <div>
+              <label for="supercell-id">SUPERCELL ID</label>
+              <input id="supercell-id" name="supercell_id" type="text" maxlength="40" placeholder="#2ABCDEF9" required />
+            </div>
+            <button id="submit-btn" class="submit-btn" type="submit">Зарегистрироваться</button>
+          </form>
+
+          <div id="status" class="status"></div>
+        </section>
       </section>
     </main>
 
@@ -1175,19 +1194,39 @@ CLASH_TEMPLATE = """
       const statusEl = document.getElementById("status");
       const existingActionEl = document.getElementById("existing-action");
       const editExistingBtn = document.getElementById("edit-existing-btn");
+      const entryStage = document.getElementById("entry-stage");
+      const openFormBtn = document.getElementById("open-form-btn");
+      const formStage = document.getElementById("form-stage");
+      const formTitle = document.getElementById("form-title");
+      const formSubtitle = document.getElementById("form-subtitle");
       let telegramUserId = null;
       let telegramUsername = null;
 
       let hasExistingRegistration = false;
       let updateMode = false;
+      let registrationBootstrapped = false;
       const contextParam = new URLSearchParams(window.location.search).get("context");
       const isTournamentFlow = contextParam === "tournaments";
-      const defaultSubmitLabel = isTournamentFlow
+      const primaryActionLabel = isTournamentFlow
         ? "Зарегистрироваться на турнир"
         : "Подать заявку в сборную";
+      const formTitleLabel = isTournamentFlow ? "Регистрация на турнир" : "Подача заявления в сборную";
+      const formSubtitleLabel = isTournamentFlow
+        ? "Заполни данные для регистрации на турнир."
+        : "Заполни данные для подачи заявления в сборную.";
+      const defaultSubmitLabel = primaryActionLabel;
       const backBtn = document.getElementById("back-btn");
       if (backBtn) {
         backBtn.href = isTournamentFlow ? "/games?view=tournaments" : "/games?view=teams";
+      }
+      if (openFormBtn) {
+        openFormBtn.textContent = primaryActionLabel;
+      }
+      if (formTitle) {
+        formTitle.textContent = formTitleLabel;
+      }
+      if (formSubtitle) {
+        formSubtitle.textContent = formSubtitleLabel;
       }
 
       const safeTheme = localStorage.getItem("cyber_theme") || "dark";
@@ -1305,6 +1344,16 @@ CLASH_TEMPLATE = """
         }
       }
 
+      function showEntryStage() {
+        entryStage.classList.remove("hidden");
+        formStage.classList.add("hidden");
+      }
+
+      function showFormStage() {
+        entryStage.classList.add("hidden");
+        formStage.classList.remove("hidden");
+      }
+
       async function loadExistingRegistration() {
         refreshTelegramIdentity();
         if (!ensureTelegramId()) {
@@ -1397,12 +1446,17 @@ CLASH_TEMPLATE = """
 
       editExistingBtn.addEventListener("click", () => {
         updateMode = true;
+        showFormStage();
         setExistingView(false);
         syncButtonText();
         setStatus("Измени данные и нажми «Сохранить изменения».");
       });
 
       async function initRegistrationPage() {
+        if (registrationBootstrapped) {
+          return;
+        }
+        registrationBootstrapped = true;
         refreshTelegramIdentity();
         syncButtonText();
         setExistingView(false);
@@ -1419,9 +1473,16 @@ CLASH_TEMPLATE = """
         }
       }
 
+      openFormBtn.addEventListener("click", async () => {
+        showFormStage();
+        syncButtonText();
+        setExistingView(false);
+        await initRegistrationPage();
+      });
+
       syncButtonText();
       setExistingView(false);
-      initRegistrationPage();
+      showEntryStage();
     </script>
   </body>
 </html>
