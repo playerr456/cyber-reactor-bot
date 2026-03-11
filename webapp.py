@@ -154,8 +154,19 @@ def resolve_game_logo_url(candidates: list[str], fallback: str) -> str:
 
 GAME_LOGOS = {
     "cs2": resolve_game_logo_url(
-        ["cs2_logo.png", "cs2 logo.png", "counter_strike2_logo.png", "hs_logo.png"],
-        "cs2_logo.png",
+        [
+            "cs_logo.png",
+            "cs logo.png",
+            "cs_logo.jpg",
+            "cs_logo.jpeg",
+            "cs_logo.webp",
+            "cs2_logo.png",
+            "cs2 logo.png",
+            "counter_strike2_logo.png",
+            "counter_strike_2_logo.png",
+            "hs_logo.png",
+        ],
+        "hs_logo.png",
     ),
     "dota2": resolve_game_logo_url(["dota2_logo.png", "dota2 logo.png"], "dota2_logo.png"),
     "cr": resolve_game_logo_url(["cr_logo.png", "cr logo.png"], "cr_logo.png"),
@@ -285,7 +296,7 @@ HTML_TEMPLATE = """
       }
 
       .top-logo-badge {
-        position: fixed;
+        position: absolute;
         top: calc((var(--top-strip-height) - var(--top-logo-size, 64px)) / 2);
         left: 50%;
         transform: translateX(-50%);
@@ -1074,7 +1085,7 @@ GAMES_TEMPLATE = """
       }
 
       .top-logo-badge {
-        position: fixed;
+        position: absolute;
         top: calc((var(--top-strip-height) - var(--top-logo-size, 64px)) / 2);
         left: 50%;
         transform: translateX(-50%);
@@ -1694,7 +1705,7 @@ ACHIEVEMENTS_TEMPLATE = """
       }
 
       .top-logo-badge {
-        position: fixed;
+        position: absolute;
         top: calc((var(--top-strip-height) - var(--top-logo-size, 64px)) / 2);
         left: 50%;
         transform: translateX(-50%);
