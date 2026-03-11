@@ -1050,12 +1050,6 @@ GAMES_TEMPLATE = """
         flex-shrink: 0;
       }
 
-      .game-thumb.cs2-thumb {
-        width: 82px;
-        height: 52px;
-        padding: 6px;
-      }
-
       body.theme-light .game-thumb {
         background: #edf2fb;
       }
@@ -1078,7 +1072,7 @@ GAMES_TEMPLATE = """
 
       <section class="games-list">
         <a id="cs2-link" class="game-link" href="/discipline/cs2?context=teams">
-          <img class="game-thumb cs2-thumb" src="/logos/cs2%20logo.png" alt="Counter Strike 2" />
+          <img class="game-thumb" src="/logos/cs2%20logo.png" alt="Counter Strike 2" />
           <span class="game-name">COUNTER STRIKE 2</span>
         </a>
         <a id="dota2-link" class="game-link" href="/discipline/dota2?context=teams">
