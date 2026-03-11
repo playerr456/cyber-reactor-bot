@@ -154,7 +154,7 @@ def resolve_game_logo_url(candidates: list[str], fallback: str) -> str:
 
 GAME_LOGOS = {
     "cs2": resolve_game_logo_url(
-        ["cs2_logo.png", "cs2 logo.png", "counter_strike2_logo.png", "hs_logo.png"],
+        ["cs2_logo.png", "cs2 logo.png", "counter_strike2_logo.png", "counter_strike_2_logo.png"],
         "cs2_logo.png",
     ),
     "dota2": resolve_game_logo_url(["dota2_logo.png", "dota2 logo.png"], "dota2_logo.png"),
