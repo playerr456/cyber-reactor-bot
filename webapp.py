@@ -1005,6 +1005,9 @@ GAMES_TEMPLATE = """
         --panel-line: rgba(255, 255, 255, 0.16);
         --muted: #bac6d8;
         --link: #a8ccff;
+        --top-button-size: 44px;
+        --top-control-bg: #0c1a34;
+        --top-control-border: rgba(255, 255, 255, 0.24);
       }
 
       body.theme-light {
@@ -1014,6 +1017,8 @@ GAMES_TEMPLATE = """
         --panel-line: rgba(15, 23, 42, 0.16);
         --muted: #5a6678;
         --link: #2058cc;
+        --top-control-bg: #d7d7d7;
+        --top-control-border: rgba(15, 23, 42, 0.28);
       }
 
       * {
@@ -1026,6 +1031,176 @@ GAMES_TEMPLATE = """
         font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
         background: var(--bg);
         color: var(--text);
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      .menu-toggle,
+      .settings-toggle {
+        position: fixed;
+        top: 14px;
+        z-index: 40;
+        width: var(--top-button-size);
+        height: var(--top-button-size);
+        display: inline-grid;
+        place-items: center;
+        border: 1px solid var(--top-control-border);
+        background: var(--top-control-bg);
+        border-radius: 12px;
+        cursor: pointer;
+        padding: 0;
+      }
+
+      .menu-toggle {
+        left: 14px;
+      }
+
+      .settings-toggle {
+        right: 14px;
+      }
+
+      .menu-icon-img,
+      .settings-icon-img {
+        width: 22px;
+        height: 22px;
+        object-fit: contain;
+        display: block;
+      }
+
+      .overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.42);
+        z-index: 30;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+      }
+
+      .overlay.visible {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .sidebar,
+      .settings-panel {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        width: min(340px, 84vw);
+        background: var(--panel);
+        z-index: 50;
+        padding: 16px 14px;
+        transition: transform 0.22s ease;
+      }
+
+      .sidebar {
+        left: 0;
+        border-right: 1px solid var(--panel-line);
+        transform: translateX(-100%);
+      }
+
+      .settings-panel {
+        right: 0;
+        border-left: 1px solid var(--panel-line);
+        transform: translateX(100%);
+      }
+
+      .sidebar.open,
+      .settings-panel.open {
+        transform: translateX(0);
+      }
+
+      .panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+      }
+
+      .panel-head h2 {
+        margin: 0;
+        font-size: 20px;
+      }
+
+      .close-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        border: 1px solid var(--panel-line);
+        background: transparent;
+        color: var(--text);
+        font-size: 18px;
+        cursor: pointer;
+      }
+
+      .nav-list {
+        display: grid;
+        gap: 6px;
+      }
+
+      .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        color: var(--text);
+        border: 1px solid transparent;
+        border-radius: 10px;
+        padding: 10px 12px;
+      }
+
+      .nav-icon {
+        width: 22px;
+        height: 22px;
+        border-radius: 6px;
+        display: inline-grid;
+        place-items: center;
+        background: rgba(255, 255, 255, 0.15);
+        color: var(--text);
+        flex-shrink: 0;
+      }
+
+      .nav-icon img {
+        width: 14px;
+        height: 14px;
+        object-fit: contain;
+        display: block;
+      }
+
+      .nav-link:hover,
+      .nav-link.active {
+        border-color: var(--panel-line);
+      }
+
+      .setting-group {
+        display: grid;
+        gap: 6px;
+        margin-bottom: 12px;
+      }
+
+      .setting-group label {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .setting-group select {
+        border-radius: 10px;
+        border: 1px solid var(--panel-line);
+        background: transparent;
+        color: var(--text);
+        padding: 10px;
+        font-family: inherit;
       }
 
       .page {
@@ -1105,6 +1280,62 @@ GAMES_TEMPLATE = """
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
   </head>
   <body>
+    <button id="menu-toggle" class="menu-toggle" type="button" aria-label="Открыть меню">
+      <img class="menu-icon-img" src="/icons/menu_icon.png" alt="" aria-hidden="true" />
+      <span class="sr-only" data-i18n="menuOpen">Открыть меню</span>
+    </button>
+    <button id="settings-toggle" class="settings-toggle" type="button" aria-label="Настройки">
+      <img class="settings-icon-img" src="/icons/setings_icon.png" alt="" aria-hidden="true" />
+      <span class="sr-only" data-i18n="settingsTitle">Настройки</span>
+    </button>
+    <div id="overlay" class="overlay"></div>
+
+    <aside id="sidebar" class="sidebar" aria-hidden="true">
+      <div class="panel-head">
+        <h2 data-i18n="sidebarTitle">Навигация</h2>
+        <button id="close-menu" class="close-btn" type="button" aria-label="Закрыть">x</button>
+      </div>
+      <nav class="nav-list">
+        <a href="/" class="nav-link">
+          <span class="nav-icon"><img src="/icons/home_page_icon.png" alt="" aria-hidden="true" /></span>
+          <span data-i18n="navMain">Главная страница</span>
+        </a>
+        <a href="/games?view=teams" class="nav-link active">
+          <span class="nav-icon"><img src="/icons/national_teams_icon.png" alt="" aria-hidden="true" /></span>
+          <span data-i18n="navHome">Сборные</span>
+        </a>
+        <a href="/games?view=tournaments" class="nav-link">
+          <span class="nav-icon"><img src="/icons/tournaments_icon.png" alt="" aria-hidden="true" /></span>
+          <span data-i18n="navClash">Турниры</span>
+        </a>
+        <a href="/achievements" class="nav-link">
+          <span class="nav-icon"><img src="/icons/achievmnents_icon.png" alt="" aria-hidden="true" /></span>
+          <span data-i18n="navCs2">Достижения</span>
+        </a>
+      </nav>
+    </aside>
+
+    <aside id="settings-panel" class="settings-panel" aria-hidden="true">
+      <div class="panel-head">
+        <h2 data-i18n="settingsTitle">Настройки</h2>
+        <button id="close-settings" class="close-btn" type="button" aria-label="Закрыть">x</button>
+      </div>
+      <div class="setting-group">
+        <label for="language-select" data-i18n="languageLabel">Язык</label>
+        <select id="language-select">
+          <option value="ru" data-i18n="langRu">Русский</option>
+          <option value="en" data-i18n="langEn">English</option>
+        </select>
+      </div>
+      <div class="setting-group">
+        <label for="theme-select" data-i18n="themeLabel">Тема</label>
+        <select id="theme-select">
+          <option value="dark" data-i18n="themeDark">Темная</option>
+          <option value="light" data-i18n="themeLight">Светлая</option>
+        </select>
+      </div>
+    </aside>
+
     <main class="page">
       <div class="top-row">
         <a id="games-back-link" class="back-link" href="/">← Главная страница</a>
@@ -1152,6 +1383,20 @@ GAMES_TEMPLATE = """
           modeTournaments: "Турниры",
           disciplinesTitle: "Игровые дисциплины",
           wotTitle: "МИР ТАНКОВ",
+          menuOpen: "Открыть меню",
+          sidebarTitle: "Навигация",
+          settingsTitle: "Настройки",
+          navMain: "Главная страница",
+          navHome: "Сборные",
+          navClash: "Турниры",
+          navCs2: "Достижения",
+          languageLabel: "Язык",
+          themeLabel: "Тема",
+          langRu: "Русский",
+          langEn: "English",
+          themeDark: "Темная",
+          themeLight: "Светлая",
+          close: "Закрыть",
         },
         en: {
           pageTitle: "Disciplines",
@@ -1160,12 +1405,22 @@ GAMES_TEMPLATE = """
           modeTournaments: "Tournaments",
           disciplinesTitle: "Game disciplines",
           wotTitle: "WORLD OF TANKS",
+          menuOpen: "Open menu",
+          sidebarTitle: "Navigation",
+          settingsTitle: "Settings",
+          navMain: "Home",
+          navHome: "National teams",
+          navClash: "Tournaments",
+          navCs2: "Achievements",
+          languageLabel: "Language",
+          themeLabel: "Theme",
+          langRu: "Russian",
+          langEn: "English",
+          themeDark: "Dark",
+          themeLight: "Light",
+          close: "Close",
         },
       };
-      const text = I18N[safeLang];
-
-      document.documentElement.lang = safeLang;
-      document.title = text.pageTitle;
 
       const backLink = document.getElementById("games-back-link");
       const modeCaption = document.getElementById("games-mode-caption");
@@ -1179,25 +1434,87 @@ GAMES_TEMPLATE = """
       const wotThumb = document.getElementById("wot-thumb");
       const wotLabel = document.getElementById("wot-label");
       const safeMode = mode === "tournaments" ? "tournaments" : "teams";
-      if (backLink) {
-        backLink.textContent = text.backToMain;
+      const overlay = document.getElementById("overlay");
+      const sidebar = document.getElementById("sidebar");
+      const settingsPanel = document.getElementById("settings-panel");
+      const menuToggle = document.getElementById("menu-toggle");
+      const settingsToggle = document.getElementById("settings-toggle");
+      const closeMenu = document.getElementById("close-menu");
+      const closeSettings = document.getElementById("close-settings");
+      const languageSelect = document.getElementById("language-select");
+      const themeSelect = document.getElementById("theme-select");
+      const navLinks = Array.from(document.querySelectorAll(".nav-link"));
+
+      function closePanels() {
+        sidebar?.classList.remove("open");
+        settingsPanel?.classList.remove("open");
+        overlay?.classList.remove("visible");
+        sidebar?.setAttribute("aria-hidden", "true");
+        settingsPanel?.setAttribute("aria-hidden", "true");
       }
-      if (gamesTitle) {
-        gamesTitle.textContent = text.disciplinesTitle;
+
+      function openSidebar() {
+        settingsPanel?.classList.remove("open");
+        sidebar?.classList.add("open");
+        overlay?.classList.add("visible");
+        sidebar?.setAttribute("aria-hidden", "false");
+        settingsPanel?.setAttribute("aria-hidden", "true");
       }
-      if (wotThumb) {
-        wotThumb.alt = text.wotTitle;
+
+      function openSettings() {
+        sidebar?.classList.remove("open");
+        settingsPanel?.classList.add("open");
+        overlay?.classList.add("visible");
+        sidebar?.setAttribute("aria-hidden", "true");
+        settingsPanel?.setAttribute("aria-hidden", "false");
       }
-      if (wotLabel) {
-        wotLabel.textContent = text.wotTitle;
-      }
-      if (modeCaption) {
-        if (safeMode === "tournaments") {
-          modeCaption.textContent = text.modeTournaments;
-        } else {
-          modeCaption.textContent = text.modeTeams;
+
+      function applyTheme(theme) {
+        const safeTheme = theme === "light" ? "light" : "dark";
+        document.body.classList.toggle("theme-light", safeTheme === "light");
+        if (themeSelect) {
+          themeSelect.value = safeTheme;
         }
+        localStorage.setItem("cyber_theme", safeTheme);
       }
+
+      function translate(lang) {
+        const safe = I18N[lang] ? lang : "ru";
+        const text = I18N[safe];
+        localStorage.setItem("cyber_lang", safe);
+        document.documentElement.lang = safe;
+        document.title = text.pageTitle;
+        if (languageSelect) {
+          languageSelect.value = safe;
+        }
+
+        document.querySelectorAll("[data-i18n]").forEach((el) => {
+          const key = el.dataset.i18n;
+          el.textContent = text[key] || I18N.ru[key] || key;
+        });
+
+        if (backLink) {
+          backLink.textContent = text.backToMain;
+        }
+        if (gamesTitle) {
+          gamesTitle.textContent = text.disciplinesTitle;
+        }
+        if (wotThumb) {
+          wotThumb.alt = text.wotTitle;
+        }
+        if (wotLabel) {
+          wotLabel.textContent = text.wotTitle;
+        }
+        if (modeCaption) {
+          modeCaption.textContent = safeMode === "tournaments" ? text.modeTournaments : text.modeTeams;
+        }
+
+        closeMenu?.setAttribute("aria-label", text.close);
+        closeSettings?.setAttribute("aria-label", text.close);
+        menuToggle?.setAttribute("aria-label", text.menuOpen);
+        settingsToggle?.setAttribute("aria-label", text.settingsTitle);
+      }
+
       if (cs2Link) {
         cs2Link.href = `/discipline/cs2?context=${safeMode}`;
       }
@@ -1214,8 +1531,29 @@ GAMES_TEMPLATE = """
         wotLink.href = `/discipline/wot?context=${safeMode}`;
       }
 
-      const safeTheme = localStorage.getItem("cyber_theme") || "dark";
-      document.body.classList.toggle("theme-light", safeTheme === "light");
+      menuToggle?.addEventListener("click", openSidebar);
+      settingsToggle?.addEventListener("click", openSettings);
+      closeMenu?.addEventListener("click", closePanels);
+      closeSettings?.addEventListener("click", closePanels);
+      overlay?.addEventListener("click", closePanels);
+
+      navLinks.forEach((link) => {
+        link.addEventListener("click", () => {
+          closePanels();
+        });
+      });
+
+      languageSelect?.addEventListener("change", (e) => translate(e.target.value));
+      themeSelect?.addEventListener("change", (e) => applyTheme(e.target.value));
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          closePanels();
+        }
+      });
+
+      applyTheme(localStorage.getItem("cyber_theme") || "dark");
+      translate(localStorage.getItem("cyber_lang") || safeLang);
     </script>
   </body>
 </html>
@@ -1252,6 +1590,9 @@ ACHIEVEMENTS_TEMPLATE = """
         --panel: #10141d;
         --panel-line: rgba(255, 255, 255, 0.16);
         --muted: #bac6d8;
+        --top-button-size: 44px;
+        --top-control-bg: #0c1a34;
+        --top-control-border: rgba(255, 255, 255, 0.24);
       }
 
       body.theme-light {
@@ -1260,6 +1601,8 @@ ACHIEVEMENTS_TEMPLATE = """
         --panel: #ffffff;
         --panel-line: rgba(15, 23, 42, 0.16);
         --muted: #5a6678;
+        --top-control-bg: #d7d7d7;
+        --top-control-border: rgba(15, 23, 42, 0.28);
       }
 
       * {
@@ -1272,6 +1615,176 @@ ACHIEVEMENTS_TEMPLATE = """
         font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
         background: var(--bg);
         color: var(--text);
+      }
+
+      .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      .menu-toggle,
+      .settings-toggle {
+        position: fixed;
+        top: 14px;
+        z-index: 40;
+        width: var(--top-button-size);
+        height: var(--top-button-size);
+        display: inline-grid;
+        place-items: center;
+        border: 1px solid var(--top-control-border);
+        background: var(--top-control-bg);
+        border-radius: 12px;
+        cursor: pointer;
+        padding: 0;
+      }
+
+      .menu-toggle {
+        left: 14px;
+      }
+
+      .settings-toggle {
+        right: 14px;
+      }
+
+      .menu-icon-img,
+      .settings-icon-img {
+        width: 22px;
+        height: 22px;
+        object-fit: contain;
+        display: block;
+      }
+
+      .overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.42);
+        z-index: 30;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+      }
+
+      .overlay.visible {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      .sidebar,
+      .settings-panel {
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        width: min(340px, 84vw);
+        background: var(--panel);
+        z-index: 50;
+        padding: 16px 14px;
+        transition: transform 0.22s ease;
+      }
+
+      .sidebar {
+        left: 0;
+        border-right: 1px solid var(--panel-line);
+        transform: translateX(-100%);
+      }
+
+      .settings-panel {
+        right: 0;
+        border-left: 1px solid var(--panel-line);
+        transform: translateX(100%);
+      }
+
+      .sidebar.open,
+      .settings-panel.open {
+        transform: translateX(0);
+      }
+
+      .panel-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 12px;
+      }
+
+      .panel-head h2 {
+        margin: 0;
+        font-size: 20px;
+      }
+
+      .close-btn {
+        width: 34px;
+        height: 34px;
+        border-radius: 8px;
+        border: 1px solid var(--panel-line);
+        background: transparent;
+        color: var(--text);
+        font-size: 18px;
+        cursor: pointer;
+      }
+
+      .nav-list {
+        display: grid;
+        gap: 6px;
+      }
+
+      .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        color: var(--text);
+        border: 1px solid transparent;
+        border-radius: 10px;
+        padding: 10px 12px;
+      }
+
+      .nav-icon {
+        width: 22px;
+        height: 22px;
+        border-radius: 6px;
+        display: inline-grid;
+        place-items: center;
+        background: rgba(255, 255, 255, 0.15);
+        color: var(--text);
+        flex-shrink: 0;
+      }
+
+      .nav-icon img {
+        width: 14px;
+        height: 14px;
+        object-fit: contain;
+        display: block;
+      }
+
+      .nav-link:hover,
+      .nav-link.active {
+        border-color: var(--panel-line);
+      }
+
+      .setting-group {
+        display: grid;
+        gap: 6px;
+        margin-bottom: 12px;
+      }
+
+      .setting-group label {
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .setting-group select {
+        border-radius: 10px;
+        border: 1px solid var(--panel-line);
+        background: transparent;
+        color: var(--text);
+        padding: 10px;
+        font-family: inherit;
       }
 
       .page {
@@ -1301,6 +1814,62 @@ ACHIEVEMENTS_TEMPLATE = """
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
   </head>
   <body>
+    <button id="menu-toggle" class="menu-toggle" type="button" aria-label="Открыть меню">
+      <img class="menu-icon-img" src="/icons/menu_icon.png" alt="" aria-hidden="true" />
+      <span class="sr-only" data-i18n="menuOpen">Открыть меню</span>
+    </button>
+    <button id="settings-toggle" class="settings-toggle" type="button" aria-label="Настройки">
+      <img class="settings-icon-img" src="/icons/setings_icon.png" alt="" aria-hidden="true" />
+      <span class="sr-only" data-i18n="settingsTitle">Настройки</span>
+    </button>
+    <div id="overlay" class="overlay"></div>
+
+    <aside id="sidebar" class="sidebar" aria-hidden="true">
+      <div class="panel-head">
+        <h2 data-i18n="sidebarTitle">Навигация</h2>
+        <button id="close-menu" class="close-btn" type="button" aria-label="Закрыть">x</button>
+      </div>
+      <nav class="nav-list">
+        <a href="/" class="nav-link">
+          <span class="nav-icon"><img src="/icons/home_page_icon.png" alt="" aria-hidden="true" /></span>
+          <span data-i18n="navMain">Главная страница</span>
+        </a>
+        <a href="/games?view=teams" class="nav-link">
+          <span class="nav-icon"><img src="/icons/national_teams_icon.png" alt="" aria-hidden="true" /></span>
+          <span data-i18n="navHome">Сборные</span>
+        </a>
+        <a href="/games?view=tournaments" class="nav-link">
+          <span class="nav-icon"><img src="/icons/tournaments_icon.png" alt="" aria-hidden="true" /></span>
+          <span data-i18n="navClash">Турниры</span>
+        </a>
+        <a href="/achievements" class="nav-link active">
+          <span class="nav-icon"><img src="/icons/achievmnents_icon.png" alt="" aria-hidden="true" /></span>
+          <span data-i18n="navCs2">Достижения</span>
+        </a>
+      </nav>
+    </aside>
+
+    <aside id="settings-panel" class="settings-panel" aria-hidden="true">
+      <div class="panel-head">
+        <h2 data-i18n="settingsTitle">Настройки</h2>
+        <button id="close-settings" class="close-btn" type="button" aria-label="Закрыть">x</button>
+      </div>
+      <div class="setting-group">
+        <label for="language-select" data-i18n="languageLabel">Язык</label>
+        <select id="language-select">
+          <option value="ru" data-i18n="langRu">Русский</option>
+          <option value="en" data-i18n="langEn">English</option>
+        </select>
+      </div>
+      <div class="setting-group">
+        <label for="theme-select" data-i18n="themeLabel">Тема</label>
+        <select id="theme-select">
+          <option value="dark" data-i18n="themeDark">Темная</option>
+          <option value="light" data-i18n="themeLight">Светлая</option>
+        </select>
+      </div>
+    </aside>
+
     <main class="page">
       <a id="achievements-back-link" class="back-link" href="/">← Главная страница</a>
       <div id="achievements-message" class="message">Слишком много добились, не поместится на сайте</div>
@@ -1319,28 +1888,134 @@ ACHIEVEMENTS_TEMPLATE = """
           pageTitle: "Достижения",
           backToMain: "← Главная страница",
           message: "Слишком много добились, не поместится на сайте",
+          menuOpen: "Открыть меню",
+          sidebarTitle: "Навигация",
+          settingsTitle: "Настройки",
+          navMain: "Главная страница",
+          navHome: "Сборные",
+          navClash: "Турниры",
+          navCs2: "Достижения",
+          languageLabel: "Язык",
+          themeLabel: "Тема",
+          langRu: "Русский",
+          langEn: "English",
+          themeDark: "Темная",
+          themeLight: "Светлая",
+          close: "Закрыть",
         },
         en: {
           pageTitle: "Achievements",
           backToMain: "← Home",
           message: "We've achieved too much, it won't fit on the website.",
+          menuOpen: "Open menu",
+          sidebarTitle: "Navigation",
+          settingsTitle: "Settings",
+          navMain: "Home",
+          navHome: "National teams",
+          navClash: "Tournaments",
+          navCs2: "Achievements",
+          languageLabel: "Language",
+          themeLabel: "Theme",
+          langRu: "Russian",
+          langEn: "English",
+          themeDark: "Dark",
+          themeLight: "Light",
+          close: "Close",
         },
       };
-      const text = I18N[safeLang];
-      document.documentElement.lang = safeLang;
-      document.title = text.pageTitle;
 
       const backLink = document.getElementById("achievements-back-link");
       const message = document.getElementById("achievements-message");
-      if (backLink) {
-        backLink.textContent = text.backToMain;
-      }
-      if (message) {
-        message.textContent = text.message;
+      const overlay = document.getElementById("overlay");
+      const sidebar = document.getElementById("sidebar");
+      const settingsPanel = document.getElementById("settings-panel");
+      const menuToggle = document.getElementById("menu-toggle");
+      const settingsToggle = document.getElementById("settings-toggle");
+      const closeMenu = document.getElementById("close-menu");
+      const closeSettings = document.getElementById("close-settings");
+      const languageSelect = document.getElementById("language-select");
+      const themeSelect = document.getElementById("theme-select");
+      const navLinks = Array.from(document.querySelectorAll(".nav-link"));
+
+      function closePanels() {
+        sidebar?.classList.remove("open");
+        settingsPanel?.classList.remove("open");
+        overlay?.classList.remove("visible");
+        sidebar?.setAttribute("aria-hidden", "true");
+        settingsPanel?.setAttribute("aria-hidden", "true");
       }
 
-      const safeTheme = localStorage.getItem("cyber_theme") || "dark";
-      document.body.classList.toggle("theme-light", safeTheme === "light");
+      function openSidebar() {
+        settingsPanel?.classList.remove("open");
+        sidebar?.classList.add("open");
+        overlay?.classList.add("visible");
+        sidebar?.setAttribute("aria-hidden", "false");
+        settingsPanel?.setAttribute("aria-hidden", "true");
+      }
+
+      function openSettings() {
+        sidebar?.classList.remove("open");
+        settingsPanel?.classList.add("open");
+        overlay?.classList.add("visible");
+        sidebar?.setAttribute("aria-hidden", "true");
+        settingsPanel?.setAttribute("aria-hidden", "false");
+      }
+
+      function applyTheme(theme) {
+        const safeTheme = theme === "light" ? "light" : "dark";
+        document.body.classList.toggle("theme-light", safeTheme === "light");
+        if (themeSelect) {
+          themeSelect.value = safeTheme;
+        }
+        localStorage.setItem("cyber_theme", safeTheme);
+      }
+
+      function translate(lang) {
+        const safe = I18N[lang] ? lang : "ru";
+        const text = I18N[safe];
+        localStorage.setItem("cyber_lang", safe);
+        document.documentElement.lang = safe;
+        document.title = text.pageTitle;
+        if (languageSelect) {
+          languageSelect.value = safe;
+        }
+        document.querySelectorAll("[data-i18n]").forEach((el) => {
+          const key = el.dataset.i18n;
+          el.textContent = text[key] || I18N.ru[key] || key;
+        });
+        if (backLink) {
+          backLink.textContent = text.backToMain;
+        }
+        if (message) {
+          message.textContent = text.message;
+        }
+        closeMenu?.setAttribute("aria-label", text.close);
+        closeSettings?.setAttribute("aria-label", text.close);
+        menuToggle?.setAttribute("aria-label", text.menuOpen);
+        settingsToggle?.setAttribute("aria-label", text.settingsTitle);
+      }
+
+      menuToggle?.addEventListener("click", openSidebar);
+      settingsToggle?.addEventListener("click", openSettings);
+      closeMenu?.addEventListener("click", closePanels);
+      closeSettings?.addEventListener("click", closePanels);
+      overlay?.addEventListener("click", closePanels);
+      navLinks.forEach((link) => {
+        link.addEventListener("click", () => {
+          closePanels();
+        });
+      });
+      languageSelect?.addEventListener("change", (e) => translate(e.target.value));
+      themeSelect?.addEventListener("change", (e) => applyTheme(e.target.value));
+
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          closePanels();
+        }
+      });
+
+      applyTheme(localStorage.getItem("cyber_theme") || "dark");
+      translate(localStorage.getItem("cyber_lang") || safeLang);
     </script>
   </body>
 </html>
