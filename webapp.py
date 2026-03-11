@@ -285,12 +285,12 @@ HTML_TEMPLATE = """
 
       .top-logo-badge {
         position: fixed;
-        top: 4px;
+        top: 0;
         left: 50%;
         transform: translateX(-50%);
         z-index: 40;
-        width: var(--top-logo-size);
-        height: var(--top-logo-size);
+        width: var(--top-logo-size, 64px);
+        height: var(--top-logo-size, 64px);
         border-radius: 50%;
         background: var(--top-logo-bg);
         border: 1px solid var(--top-logo-border);
@@ -300,20 +300,22 @@ HTML_TEMPLATE = """
       }
 
       .top-logo-badge img {
-        width: calc(var(--top-logo-size) - 2px);
-        height: calc(var(--top-logo-size) - 2px);
+        width: calc(var(--top-logo-size, 64px) - 2px);
+        height: calc(var(--top-logo-size, 64px) - 2px);
+        max-width: calc(var(--top-logo-size, 64px) - 2px);
+        max-height: calc(var(--top-logo-size, 64px) - 2px);
         border-radius: 50%;
         object-fit: cover;
       }
 
       .top-logo-badge {
         position: fixed;
-        top: 4px;
+        top: 0;
         left: 50%;
         transform: translateX(-50%);
         z-index: 40;
-        width: var(--top-logo-size);
-        height: var(--top-logo-size);
+        width: var(--top-logo-size, 64px);
+        height: var(--top-logo-size, 64px);
         border-radius: 50%;
         background: var(--top-logo-bg);
         border: 1px solid var(--top-logo-border);
@@ -323,20 +325,22 @@ HTML_TEMPLATE = """
       }
 
       .top-logo-badge img {
-        width: calc(var(--top-logo-size) - 2px);
-        height: calc(var(--top-logo-size) - 2px);
+        width: calc(var(--top-logo-size, 64px) - 2px);
+        height: calc(var(--top-logo-size, 64px) - 2px);
+        max-width: calc(var(--top-logo-size, 64px) - 2px);
+        max-height: calc(var(--top-logo-size, 64px) - 2px);
         border-radius: 50%;
         object-fit: cover;
       }
 
       .top-logo-badge {
         position: fixed;
-        top: 4px;
+        top: 0;
         left: 50%;
         transform: translateX(-50%);
         z-index: 40;
-        width: var(--top-logo-size);
-        height: var(--top-logo-size);
+        width: var(--top-logo-size, 64px);
+        height: var(--top-logo-size, 64px);
         border-radius: 50%;
         background: var(--top-logo-bg);
         border: 1px solid var(--top-logo-border);
@@ -346,8 +350,10 @@ HTML_TEMPLATE = """
       }
 
       .top-logo-badge img {
-        width: calc(var(--top-logo-size) - 2px);
-        height: calc(var(--top-logo-size) - 2px);
+        width: calc(var(--top-logo-size, 64px) - 2px);
+        height: calc(var(--top-logo-size, 64px) - 2px);
+        max-width: calc(var(--top-logo-size, 64px) - 2px);
+        max-height: calc(var(--top-logo-size, 64px) - 2px);
         border-radius: 50%;
         object-fit: cover;
       }
@@ -1105,12 +1111,12 @@ GAMES_TEMPLATE = """
 
       .top-logo-badge {
         position: fixed;
-        top: 4px;
+        top: 0;
         left: 50%;
         transform: translateX(-50%);
         z-index: 40;
-        width: var(--top-logo-size);
-        height: var(--top-logo-size);
+        width: var(--top-logo-size, 64px);
+        height: var(--top-logo-size, 64px);
         border-radius: 50%;
         background: var(--top-logo-bg);
         border: 1px solid var(--top-logo-border);
@@ -1120,8 +1126,10 @@ GAMES_TEMPLATE = """
       }
 
       .top-logo-badge img {
-        width: calc(var(--top-logo-size) - 2px);
-        height: calc(var(--top-logo-size) - 2px);
+        width: calc(var(--top-logo-size, 64px) - 2px);
+        height: calc(var(--top-logo-size, 64px) - 2px);
+        max-width: calc(var(--top-logo-size, 64px) - 2px);
+        max-height: calc(var(--top-logo-size, 64px) - 2px);
         border-radius: 50%;
         object-fit: cover;
       }
@@ -1710,12 +1718,12 @@ ACHIEVEMENTS_TEMPLATE = """
 
       .top-logo-badge {
         position: fixed;
-        top: 4px;
+        top: 0;
         left: 50%;
         transform: translateX(-50%);
         z-index: 40;
-        width: var(--top-logo-size);
-        height: var(--top-logo-size);
+        width: var(--top-logo-size, 64px);
+        height: var(--top-logo-size, 64px);
         border-radius: 50%;
         background: var(--top-logo-bg);
         border: 1px solid var(--top-logo-border);
@@ -1725,8 +1733,10 @@ ACHIEVEMENTS_TEMPLATE = """
       }
 
       .top-logo-badge img {
-        width: calc(var(--top-logo-size) - 2px);
-        height: calc(var(--top-logo-size) - 2px);
+        width: calc(var(--top-logo-size, 64px) - 2px);
+        height: calc(var(--top-logo-size, 64px) - 2px);
+        max-width: calc(var(--top-logo-size, 64px) - 2px);
+        max-height: calc(var(--top-logo-size, 64px) - 2px);
         border-radius: 50%;
         object-fit: cover;
       }
