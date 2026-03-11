@@ -23,32 +23,61 @@ from db import (
 
 app = FastAPI()
 BASE_DIR = Path(__file__).parent
-assets_dir = BASE_DIR / "main_page_banners"
-if not assets_dir.exists():
-    assets_dir = BASE_DIR / "assets"
-if not assets_dir.exists():
-    assets_dir.mkdir(parents=True, exist_ok=True)
 
-logos_dir = BASE_DIR / "game_logos"
-if not logos_dir.exists():
-    logos_dir = BASE_DIR / "logos"
-if not logos_dir.exists():
-    logos_dir.mkdir(parents=True, exist_ok=True)
+def resolve_existing_dir(candidates: list[Path], fallback: Path) -> Path:
+    for directory in candidates:
+        if directory.exists() and directory.is_dir():
+            return directory
+    if not fallback.exists():
+        fallback.mkdir(parents=True, exist_ok=True)
+    return fallback
 
-main_logo_dir = BASE_DIR / "cyber-reactor_logo"
-if not main_logo_dir.exists():
-    main_logo_dir = assets_dir
 
-tournaments_banner_dir = BASE_DIR / "tournaments_logos"
-if not tournaments_banner_dir.exists():
-    tournaments_banner_dir = BASE_DIR / "tournaments_page_banners"
-if not tournaments_banner_dir.exists():
-    tournaments_banner_dir = assets_dir
+assets_dir = resolve_existing_dir(
+    [
+        BASE_DIR / "banners" / "main_page_banners",
+        BASE_DIR / "main_page_banners",
+        BASE_DIR / "assets",
+    ],
+    BASE_DIR / "assets",
+)
+logos_dir = resolve_existing_dir(
+    [
+        BASE_DIR / "logos" / "game_logos",
+        BASE_DIR / "game_logos",
+        BASE_DIR / "logos",
+    ],
+    BASE_DIR / "logos",
+)
+main_logo_dir = resolve_existing_dir(
+    [
+        BASE_DIR / "logos" / "cyber-reactor_logo",
+        BASE_DIR / "cyber-reactor_logo",
+        assets_dir,
+    ],
+    assets_dir,
+)
+tournaments_banner_dir = resolve_existing_dir(
+    [
+        BASE_DIR / "banners" / "tournaments_page_banners",
+        BASE_DIR / "tournaments_logos",
+        BASE_DIR / "tournaments_page_banners",
+        assets_dir,
+    ],
+    assets_dir,
+)
+icons_dir = resolve_existing_dir(
+    [
+        BASE_DIR / "icons",
+    ],
+    BASE_DIR / "icons",
+)
 
 app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
 app.mount("/logos", StaticFiles(directory=logos_dir), name="logos")
 app.mount("/main-logo", StaticFiles(directory=main_logo_dir), name="main_logo")
 app.mount("/tournaments-assets", StaticFiles(directory=tournaments_banner_dir), name="tournaments_assets")
+app.mount("/icons", StaticFiles(directory=icons_dir), name="icons")
 
 BANNER_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
 BANNER_FALLBACKS = ["banner1.jpg", "banner2.jpg", "banner3.jpg"]
@@ -109,11 +138,37 @@ def resolve_tournaments_banner_url() -> str:
 TOURNAMENTS = ["clash royale", "dota 2", "cs go"]
 
 
+def resolve_game_logo_url(candidates: list[str], fallback: str) -> str:
+    for file_name in candidates:
+        file_path = logos_dir / file_name
+        if file_path.exists() and file_path.is_file():
+            return f"/logos/{quote(file_name)}"
+    fallback_path = logos_dir / fallback
+    if fallback_path.exists() and fallback_path.is_file():
+        return f"/logos/{quote(fallback)}"
+    available = list_image_files(logos_dir)
+    if available:
+        return f"/logos/{quote(available[0].name)}"
+    return f"/logos/{quote(fallback)}"
+
+
+GAME_LOGOS = {
+    "cs2": resolve_game_logo_url(
+        ["cs2_logo.png", "cs2 logo.png", "counter_strike2_logo.png", "hs_logo.png"],
+        "cs2_logo.png",
+    ),
+    "dota2": resolve_game_logo_url(["dota2_logo.png", "dota2 logo.png"], "dota2_logo.png"),
+    "cr": resolve_game_logo_url(["cr_logo.png", "cr logo.png"], "cr_logo.png"),
+    "mlbb": resolve_game_logo_url(["mlbb_logo.png", "mlbb logo.png"], "mlbb_logo.png"),
+    "wot": resolve_game_logo_url(["wot_logo.png", "wot logo.png"], "wot_logo.png"),
+}
+
+
 DISCIPLINE_PAGES: dict[str, dict[str, str]] = {
-    "cs2": {"title": "COUNTER STRIKE 2", "logo": "/logos/cs2%20logo.png"},
-    "dota2": {"title": "DOTA 2", "logo": "/logos/dota2%20logo.png"},
-    "mlbb": {"title": "MOBILE LEGENDS", "logo": "/logos/mlbb%20logo.png"},
-    "wot": {"title": "МИР ТАНКОВ", "logo": "/logos/wot%20logo.png"},
+    "cs2": {"title": "COUNTER STRIKE 2", "logo": GAME_LOGOS["cs2"]},
+    "dota2": {"title": "DOTA 2", "logo": GAME_LOGOS["dota2"]},
+    "mlbb": {"title": "MOBILE LEGENDS", "logo": GAME_LOGOS["mlbb"]},
+    "wot": {"title": "МИР ТАНКОВ", "logo": GAME_LOGOS["wot"]},
 }
 
 
@@ -211,28 +266,12 @@ HTML_TEMPLATE = """
         padding: 0;
       }
 
-      .settings-icon {
-        display: inline-grid;
-        place-items: center;
-        width: 26px;
-        height: 26px;
-        font-size: 27px;
-        line-height: 1;
-        transform: none;
-      }
-
-      .menu-icon {
+      .menu-icon-img,
+      .settings-icon-img {
         width: 22px;
-        height: 18px;
-        display: grid;
-        align-content: space-between;
-      }
-
-      .menu-icon .bar {
+        height: 22px;
+        object-fit: contain;
         display: block;
-        height: 3px;
-        border-radius: 999px;
-        background: var(--top-control-icon);
       }
 
       .top-logo-badge {
@@ -352,6 +391,13 @@ HTML_TEMPLATE = """
         background: rgba(255, 255, 255, 0.15);
         color: var(--text);
         flex-shrink: 0;
+      }
+
+      .nav-icon img {
+        width: 14px;
+        height: 14px;
+        object-fit: contain;
+        display: block;
       }
 
       .nav-link:hover,
@@ -512,18 +558,14 @@ HTML_TEMPLATE = """
   </head>
   <body>
     <button id="menu-toggle" class="menu-toggle" type="button" aria-label="Открыть меню">
-      <span class="menu-icon" aria-hidden="true">
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
-      </span>
+      <img class="menu-icon-img" src="/icons/menu_icon.png" alt="" aria-hidden="true" />
       <span class="sr-only" data-i18n="menuOpen">Открыть меню</span>
     </button>
     <div class="top-logo-badge" aria-hidden="true">
       <img src="__MAIN_LOGO_SRC__" alt="" />
     </div>
     <button id="settings-toggle" class="settings-toggle" type="button" aria-label="Настройки">
-      <span class="settings-icon" aria-hidden="true">&#9881;</span>
+      <img class="settings-icon-img" src="/icons/setings_icon.png" alt="" aria-hidden="true" />
       <span class="sr-only" data-i18n="settingsTitle">Настройки</span>
     </button>
     <div id="overlay" class="overlay"></div>
@@ -535,19 +577,19 @@ HTML_TEMPLATE = """
       </div>
       <nav class="nav-list">
         <a href="#top-banner" class="nav-link active">
-          <span class="nav-icon">HM</span>
+          <span class="nav-icon"><img src="/icons/home_page_icon.png" alt="" aria-hidden="true" /></span>
           <span data-i18n="navMain">Главная страница</span>
         </a>
         <a href="/games?view=teams" class="nav-link">
-          <span class="nav-icon">SB</span>
+          <span class="nav-icon"><img src="/icons/national_teams_icon.png" alt="" aria-hidden="true" /></span>
           <span data-i18n="navHome">Сборные</span>
         </a>
         <a href="/games?view=tournaments" class="nav-link">
-          <span class="nav-icon">TR</span>
+          <span class="nav-icon"><img src="/icons/tournaments_icon.png" alt="" aria-hidden="true" /></span>
           <span data-i18n="navClash">Турниры</span>
         </a>
         <a href="/achievements" class="nav-link">
-          <span class="nav-icon">DG</span>
+          <span class="nav-icon"><img src="/icons/achievmnents_icon.png" alt="" aria-hidden="true" /></span>
           <span data-i18n="navCs2">Достижения</span>
         </a>
       </nav>
@@ -1072,23 +1114,23 @@ GAMES_TEMPLATE = """
 
       <section class="games-list">
         <a id="cs2-link" class="game-link" href="/discipline/cs2?context=teams">
-          <img class="game-thumb" src="/logos/cs2%20logo.png" alt="Counter Strike 2" />
+          <img class="game-thumb" src="__CS2_LOGO_SRC__" alt="Counter Strike 2" />
           <span class="game-name">COUNTER STRIKE 2</span>
         </a>
         <a id="dota2-link" class="game-link" href="/discipline/dota2?context=teams">
-          <img class="game-thumb" src="/logos/dota2%20logo.png" alt="Dota 2" />
+          <img class="game-thumb" src="__DOTA2_LOGO_SRC__" alt="Dota 2" />
           <span class="game-name">DOTA 2</span>
         </a>
         <a id="clash-royale-link" class="game-link" href="/clash-royale?context=teams">
-          <img class="game-thumb" src="/logos/cr%20logo.png" alt="Clash Royale" />
+          <img class="game-thumb" src="__CR_LOGO_SRC__" alt="Clash Royale" />
           <span class="game-name">CLASH ROYALE</span>
         </a>
         <a id="mlbb-link" class="game-link" href="/discipline/mlbb?context=teams">
-          <img class="game-thumb" src="/logos/mlbb%20logo.png" alt="Mobile Legends" />
+          <img class="game-thumb" src="__MLBB_LOGO_SRC__" alt="Mobile Legends" />
           <span class="game-name">MOBILE LEGENDS</span>
         </a>
         <a id="wot-link" class="game-link" href="/discipline/wot?context=teams">
-          <img id="wot-thumb" class="game-thumb" src="/logos/wot%20logo.png" alt="Мир Танков" />
+          <img id="wot-thumb" class="game-thumb" src="__WOT_LOGO_SRC__" alt="Мир Танков" />
           <span id="wot-label" class="game-name">МИР ТАНКОВ</span>
         </a>
       </section>
@@ -1178,6 +1220,16 @@ GAMES_TEMPLATE = """
   </body>
 </html>
 """
+
+
+def render_games_template() -> str:
+    return (
+        GAMES_TEMPLATE.replace("__CS2_LOGO_SRC__", GAME_LOGOS["cs2"])
+        .replace("__DOTA2_LOGO_SRC__", GAME_LOGOS["dota2"])
+        .replace("__CR_LOGO_SRC__", GAME_LOGOS["cr"])
+        .replace("__MLBB_LOGO_SRC__", GAME_LOGOS["mlbb"])
+        .replace("__WOT_LOGO_SRC__", GAME_LOGOS["wot"])
+    )
 
 
 ACHIEVEMENTS_TEMPLATE = """
@@ -2535,7 +2587,7 @@ async def games_page(request: Request) -> HTMLResponse:
     view = request.query_params.get("view")
     if view == "tournaments":
         return HTMLResponse(content=build_tournaments_landing_template())
-    return HTMLResponse(content=GAMES_TEMPLATE)
+    return HTMLResponse(content=render_games_template())
 
 
 @app.get("/discipline/{slug}", response_class=HTMLResponse)
