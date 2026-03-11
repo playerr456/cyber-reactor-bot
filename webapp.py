@@ -161,6 +161,9 @@ GAME_LOGOS = {
     "cr": resolve_game_logo_url(["cr_logo.png", "cr logo.png"], "cr_logo.png"),
     "mlbb": resolve_game_logo_url(["mlbb_logo.png", "mlbb logo.png"], "mlbb_logo.png"),
     "wot": resolve_game_logo_url(["wot_logo.png", "wot logo.png"], "wot_logo.png"),
+    "hs": resolve_game_logo_url(["hs_logo.png", "hs logo.png"], "hs_logo.png"),
+    "lol": resolve_game_logo_url(["lol_logo.png", "lol logo.png"], "lol_logo.png"),
+    "tekken8": resolve_game_logo_url(["tekken_logo.png", "tekken logo.png"], "tekken_logo.png"),
 }
 
 
@@ -169,6 +172,9 @@ DISCIPLINE_PAGES: dict[str, dict[str, str]] = {
     "dota2": {"title": "DOTA 2", "logo": GAME_LOGOS["dota2"]},
     "mlbb": {"title": "MOBILE LEGENDS", "logo": GAME_LOGOS["mlbb"]},
     "wot": {"title": "МИР ТАНКОВ", "logo": GAME_LOGOS["wot"]},
+    "hearthstone": {"title": "HEARTHSTONE", "logo": GAME_LOGOS["hs"]},
+    "lol": {"title": "LEAGUE OG LEGENDS", "logo": GAME_LOGOS["lol"]},
+    "tekken8": {"title": "TEKKEN 8", "logo": GAME_LOGOS["tekken8"]},
 }
 
 
@@ -1383,6 +1389,18 @@ GAMES_TEMPLATE = """
           <img id="wot-thumb" class="game-thumb" src="__WOT_LOGO_SRC__" alt="Мир Танков" />
           <span id="wot-label" class="game-name">МИР ТАНКОВ</span>
         </a>
+        <a id="hs-link" class="game-link" href="/discipline/hearthstone?context=teams">
+          <img class="game-thumb" src="__HS_LOGO_SRC__" alt="Hearthstone" />
+          <span class="game-name">HEARTHSTONE</span>
+        </a>
+        <a id="lol-link" class="game-link" href="/discipline/lol?context=teams">
+          <img class="game-thumb" src="__LOL_LOGO_SRC__" alt="League Og Legends" />
+          <span class="game-name">LEAGUE OG LEGENDS</span>
+        </a>
+        <a id="tekken8-link" class="game-link" href="/discipline/tekken8?context=teams">
+          <img class="game-thumb" src="__TEKKEN8_LOGO_SRC__" alt="Tekken 8" />
+          <span class="game-name">TEKKEN 8</span>
+        </a>
       </section>
     </main>
 
@@ -1442,6 +1460,9 @@ GAMES_TEMPLATE = """
       const dota2Link = document.getElementById("dota2-link");
       const mlbbLink = document.getElementById("mlbb-link");
       const wotLink = document.getElementById("wot-link");
+      const hsLink = document.getElementById("hs-link");
+      const lolLink = document.getElementById("lol-link");
+      const tekken8Link = document.getElementById("tekken8-link");
       const wotThumb = document.getElementById("wot-thumb");
       const wotLabel = document.getElementById("wot-label");
       const safeMode = mode === "tournaments" ? "tournaments" : "teams";
@@ -1534,6 +1555,15 @@ GAMES_TEMPLATE = """
       if (wotLink) {
         wotLink.href = `/discipline/wot?context=${safeMode}`;
       }
+      if (hsLink) {
+        hsLink.href = `/discipline/hearthstone?context=${safeMode}`;
+      }
+      if (lolLink) {
+        lolLink.href = `/discipline/lol?context=${safeMode}`;
+      }
+      if (tekken8Link) {
+        tekken8Link.href = `/discipline/tekken8?context=${safeMode}`;
+      }
 
       menuToggle?.addEventListener("click", openSidebar);
       settingsToggle?.addEventListener("click", openSettings);
@@ -1573,6 +1603,9 @@ def render_games_template() -> str:
         .replace("__CR_LOGO_SRC__", GAME_LOGOS["cr"])
         .replace("__MLBB_LOGO_SRC__", GAME_LOGOS["mlbb"])
         .replace("__WOT_LOGO_SRC__", GAME_LOGOS["wot"])
+        .replace("__HS_LOGO_SRC__", GAME_LOGOS["hs"])
+        .replace("__LOL_LOGO_SRC__", GAME_LOGOS["lol"])
+        .replace("__TEKKEN8_LOGO_SRC__", GAME_LOGOS["tekken8"])
     )
 
 
@@ -2370,6 +2403,9 @@ DISCIPLINE_TEMPLATE = """
         dota2: { ru: "DOTA 2", en: "DOTA 2" },
         mlbb: { ru: "MOBILE LEGENDS", en: "MOBILE LEGENDS" },
         wot: { ru: "МИР ТАНКОВ", en: "WORLD OF TANKS" },
+        hearthstone: { ru: "HEARTHSTONE", en: "HEARTHSTONE" },
+        lol: { ru: "LEAGUE OG LEGENDS", en: "LEAGUE OG LEGENDS" },
+        tekken8: { ru: "TEKKEN 8", en: "TEKKEN 8" },
       };
       const localizedDisciplineTitle = DISCIPLINE_TITLES[disciplineSlug]?.[safeLang];
       if (localizedDisciplineTitle) {
