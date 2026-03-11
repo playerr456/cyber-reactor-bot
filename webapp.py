@@ -200,6 +200,7 @@ HTML_TEMPLATE = """
         --top-control-icon: #e7edf9;
         --top-logo-bg: #000000;
         --top-logo-border: rgba(255, 255, 255, 0.08);
+        --ui-icon-filter: brightness(0) invert(1);
       }
 
       body.theme-light {
@@ -214,6 +215,7 @@ HTML_TEMPLATE = """
         --top-control-icon: #2f3642;
         --top-logo-bg: #000000;
         --top-logo-border: rgba(15, 23, 42, 0.35);
+        --ui-icon-filter: none;
       }
 
       * {
@@ -272,6 +274,7 @@ HTML_TEMPLATE = """
         height: 22px;
         object-fit: contain;
         display: block;
+        filter: var(--ui-icon-filter);
       }
 
       .top-logo-badge {
@@ -398,6 +401,7 @@ HTML_TEMPLATE = """
         height: 14px;
         object-fit: contain;
         display: block;
+        filter: var(--ui-icon-filter);
       }
 
       .nav-link:hover,
@@ -1008,6 +1012,7 @@ GAMES_TEMPLATE = """
         --top-button-size: 44px;
         --top-control-bg: #0c1a34;
         --top-control-border: rgba(255, 255, 255, 0.24);
+        --ui-icon-filter: brightness(0) invert(1);
       }
 
       body.theme-light {
@@ -1019,6 +1024,7 @@ GAMES_TEMPLATE = """
         --link: #2058cc;
         --top-control-bg: #d7d7d7;
         --top-control-border: rgba(15, 23, 42, 0.28);
+        --ui-icon-filter: none;
       }
 
       * {
@@ -1075,6 +1081,7 @@ GAMES_TEMPLATE = """
         height: 22px;
         object-fit: contain;
         display: block;
+        filter: var(--ui-icon-filter);
       }
 
       .overlay {
@@ -1176,6 +1183,7 @@ GAMES_TEMPLATE = """
         height: 14px;
         object-fit: contain;
         display: block;
+        filter: var(--ui-icon-filter);
       }
 
       .nav-link:hover,
@@ -1593,6 +1601,7 @@ ACHIEVEMENTS_TEMPLATE = """
         --top-button-size: 44px;
         --top-control-bg: #0c1a34;
         --top-control-border: rgba(255, 255, 255, 0.24);
+        --ui-icon-filter: brightness(0) invert(1);
       }
 
       body.theme-light {
@@ -1603,6 +1612,7 @@ ACHIEVEMENTS_TEMPLATE = """
         --muted: #5a6678;
         --top-control-bg: #d7d7d7;
         --top-control-border: rgba(15, 23, 42, 0.28);
+        --ui-icon-filter: none;
       }
 
       * {
@@ -1659,6 +1669,7 @@ ACHIEVEMENTS_TEMPLATE = """
         height: 22px;
         object-fit: contain;
         display: block;
+        filter: var(--ui-icon-filter);
       }
 
       .overlay {
@@ -1760,6 +1771,7 @@ ACHIEVEMENTS_TEMPLATE = """
         height: 14px;
         object-fit: contain;
         display: block;
+        filter: var(--ui-icon-filter);
       }
 
       .nav-link:hover,
