@@ -195,7 +195,7 @@ HTML_TEMPLATE = """
         --link: #a8ccff;
         --top-button-size: 44px;
         --top-logo-size: 64px;
-        --top-control-bg: #1a2336;
+        --top-control-bg: #17212B;
         --top-control-border: rgba(255, 255, 255, 0.24);
         --top-control-icon: #e7edf9;
         --top-logo-bg: #000000;
@@ -1010,7 +1010,7 @@ GAMES_TEMPLATE = """
         --muted: #bac6d8;
         --link: #a8ccff;
         --top-button-size: 44px;
-        --top-control-bg: #1a2336;
+        --top-control-bg: #17212B;
         --top-control-border: rgba(255, 255, 255, 0.24);
         --ui-icon-filter: brightness(0) invert(1);
       }
@@ -1599,7 +1599,7 @@ ACHIEVEMENTS_TEMPLATE = """
         --panel-line: rgba(255, 255, 255, 0.16);
         --muted: #bac6d8;
         --top-button-size: 44px;
-        --top-control-bg: #1a2336;
+        --top-control-bg: #17212B;
         --top-control-border: rgba(255, 255, 255, 0.24);
         --ui-icon-filter: brightness(0) invert(1);
       }
