@@ -2,6 +2,7 @@
 
 import os
 import re
+from urllib.parse import quote
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse
@@ -21,8 +22,50 @@ from db import (
 
 
 app = FastAPI()
-app.mount("/assets", StaticFiles(directory=Path(__file__).parent / "assets"), name="assets")
-app.mount("/logos", StaticFiles(directory=Path(__file__).parent / "logos"), name="logos")
+BASE_DIR = Path(__file__).parent
+assets_dir = BASE_DIR / "main_page_banners"
+if not assets_dir.exists():
+    assets_dir = BASE_DIR / "assets"
+if not assets_dir.exists():
+    assets_dir.mkdir(parents=True, exist_ok=True)
+
+logos_dir = BASE_DIR / "game_logos"
+if not logos_dir.exists():
+    logos_dir = BASE_DIR / "logos"
+if not logos_dir.exists():
+    logos_dir.mkdir(parents=True, exist_ok=True)
+
+app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+app.mount("/logos", StaticFiles(directory=logos_dir), name="logos")
+
+BANNER_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+BANNER_FALLBACKS = ["banner1.jpg", "banner2.jpg", "banner3.jpg"]
+
+
+def resolve_banner_urls() -> list[str]:
+    fallback_urls = [f"/assets/{quote(name)}" for name in BANNER_FALLBACKS]
+    if not assets_dir.exists():
+        return fallback_urls
+
+    strict_banners = [assets_dir / name for name in BANNER_FALLBACKS]
+    if all(path.exists() and path.is_file() for path in strict_banners):
+        return fallback_urls
+
+    image_files = sorted(
+        (
+            file_path
+            for file_path in assets_dir.iterdir()
+            if file_path.is_file() and file_path.suffix.lower() in BANNER_IMAGE_EXTENSIONS
+        ),
+        key=lambda file_path: file_path.name.lower(),
+    )
+    if not image_files:
+        return fallback_urls
+
+    selected = image_files[:3]
+    while len(selected) < 3:
+        selected.append(selected[-1])
+    return [f"/assets/{quote(file_path.name)}" for file_path in selected]
 
 
 TOURNAMENTS = ["clash royale", "dota 2", "cs go"]
@@ -337,21 +380,47 @@ HTML_TEMPLATE = """
         bottom: 14px;
         transform: translateX(-50%);
         display: flex;
-        gap: 8px;
+        gap: 10px;
         z-index: 2;
       }
 
       .dot {
-        width: 10px;
-        height: 10px;
+        width: 30px;
+        height: 9px;
         border-radius: 999px;
-        border: 0;
+        border: 1px solid rgba(255, 255, 255, 0.44);
         cursor: pointer;
-        background: rgba(255, 255, 255, 0.45);
+        background: rgba(255, 255, 255, 0.2);
+        transition: width 0.2s ease, background 0.2s ease;
       }
 
       .dot.active {
         background: #ffffff;
+        width: 44px;
+      }
+
+      .carousel-nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        background: rgba(0, 0, 0, 0.35);
+        color: #ffffff;
+        font-size: 20px;
+        line-height: 1;
+        cursor: pointer;
+        z-index: 2;
+      }
+
+      .carousel-nav.prev {
+        left: 10px;
+      }
+
+      .carousel-nav.next {
+        right: 10px;
       }
 
       .contacts-inline {
@@ -452,14 +521,16 @@ HTML_TEMPLATE = """
     <main class="page">
       <section id="top-banner" class="carousel" aria-label="Баннеры">
         <div class="slide active">
-          <img src="/assets/banner1.jpg" alt="Баннер 1" />
+          <img src="__BANNER_1_SRC__" alt="Баннер 1" />
         </div>
         <div class="slide">
-          <img src="/assets/banner2.jpg" alt="Баннер 2" />
+          <img src="__BANNER_2_SRC__" alt="Баннер 2" />
         </div>
         <div class="slide">
-          <img src="/assets/banner3.jpg" alt="Баннер 3" />
+          <img src="__BANNER_3_SRC__" alt="Баннер 3" />
         </div>
+        <button class="carousel-nav prev" type="button" aria-label="Предыдущий баннер">&#8249;</button>
+        <button class="carousel-nav next" type="button" aria-label="Следующий баннер">&#8250;</button>
         <div class="dots">
           <button class="dot active" type="button" data-index="0" aria-label="Баннер 1"></button>
           <button class="dot" type="button" data-index="1" aria-label="Баннер 2"></button>
@@ -588,6 +659,9 @@ HTML_TEMPLATE = """
 
       const slides = Array.from(document.querySelectorAll(".slide"));
       const dots = Array.from(document.querySelectorAll(".dot"));
+      const carousel = document.getElementById("top-banner");
+      const prevBannerBtn = carousel?.querySelector(".carousel-nav.prev");
+      const nextBannerBtn = carousel?.querySelector(".carousel-nav.next");
       const overlay = document.getElementById("overlay");
       const sidebar = document.getElementById("sidebar");
       const settingsPanel = document.getElementById("settings-panel");
@@ -601,6 +675,9 @@ HTML_TEMPLATE = """
 
       let current = 0;
       let autoplayId = null;
+      let touchStartX = null;
+      let touchDeltaX = 0;
+      const swipeThreshold = 40;
 
       function showSlide(index) {
         current = (index + slides.length) % slides.length;
@@ -610,6 +687,10 @@ HTML_TEMPLATE = """
 
       function nextSlide() {
         showSlide(current + 1);
+      }
+
+      function prevSlide() {
+        showSlide(current - 1);
       }
 
       function startAutoplay() {
@@ -672,6 +753,55 @@ HTML_TEMPLATE = """
         });
       });
 
+      prevBannerBtn?.addEventListener("click", () => {
+        prevSlide();
+        startAutoplay();
+      });
+
+      nextBannerBtn?.addEventListener("click", () => {
+        nextSlide();
+        startAutoplay();
+      });
+
+      carousel?.addEventListener(
+        "touchstart",
+        (event) => {
+          if (!event.touches || event.touches.length === 0) {
+            return;
+          }
+          touchStartX = event.touches[0].clientX;
+          touchDeltaX = 0;
+        },
+        { passive: true },
+      );
+
+      carousel?.addEventListener(
+        "touchmove",
+        (event) => {
+          if (touchStartX === null || !event.touches || event.touches.length === 0) {
+            return;
+          }
+          touchDeltaX = event.touches[0].clientX - touchStartX;
+        },
+        { passive: true },
+      );
+
+      carousel?.addEventListener("touchend", () => {
+        if (touchStartX === null) {
+          return;
+        }
+        if (Math.abs(touchDeltaX) >= swipeThreshold) {
+          if (touchDeltaX < 0) {
+            nextSlide();
+          } else {
+            prevSlide();
+          }
+          startAutoplay();
+        }
+        touchStartX = null;
+        touchDeltaX = 0;
+      });
+
       menuToggle.addEventListener("click", openSidebar);
       settingsToggle.addEventListener("click", openSettings);
       closeMenu.addEventListener("click", closePanels);
@@ -703,6 +833,40 @@ HTML_TEMPLATE = """
   </body>
 </html>
 """
+
+
+def render_home_template(*, include_contacts: bool, tournaments_active: bool) -> str:
+    banner_urls = resolve_banner_urls()
+    html = (
+        HTML_TEMPLATE.replace("__BANNER_1_SRC__", banner_urls[0])
+        .replace("__BANNER_2_SRC__", banner_urls[1])
+        .replace("__BANNER_3_SRC__", banner_urls[2])
+    )
+    if not include_contacts:
+        html = re.sub(
+            r"\n\s*<section id=\"contacts\" class=\"contacts-inline\">.*?</section>\n",
+            "\n",
+            html,
+            count=1,
+            flags=re.DOTALL,
+        )
+    if tournaments_active:
+        html = html.replace(
+            'href="#top-banner" class="nav-link active"',
+            'href="/" class="nav-link"',
+            1,
+        )
+        html = html.replace(
+            'href="/games?view=tournaments" class="nav-link"',
+            'href="/games?view=tournaments" class="nav-link active"',
+            1,
+        )
+    return html
+
+
+def build_tournaments_landing_template() -> str:
+    html = render_home_template(include_contacts=False, tournaments_active=True)
+    return html
 
 
 GAMES_TEMPLATE = """
@@ -2296,11 +2460,14 @@ def startup() -> None:
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request) -> HTMLResponse:
-    return HTMLResponse(content=HTML_TEMPLATE)
+    return HTMLResponse(content=render_home_template(include_contacts=True, tournaments_active=False))
 
 
 @app.get("/games", response_class=HTMLResponse)
 async def games_page(request: Request) -> HTMLResponse:
+    view = request.query_params.get("view")
+    if view == "tournaments":
+        return HTMLResponse(content=build_tournaments_landing_template())
     return HTMLResponse(content=GAMES_TEMPLATE)
 
 
