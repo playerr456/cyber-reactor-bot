@@ -1253,22 +1253,11 @@ GAMES_TEMPLATE = """
         padding: 72px 0 26px;
       }
 
-      .top-row {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        gap: 10px;
-      }
-
-      .top-caption {
-        color: var(--muted);
-        font-size: 14px;
-      }
-
       h1 {
-        margin: 16px 0 12px;
+        margin: 8px 0 12px;
         font-size: clamp(28px, 5vw, 42px);
         line-height: 1;
+        text-align: center;
       }
 
       .games-list {
@@ -1371,9 +1360,6 @@ GAMES_TEMPLATE = """
     </aside>
 
     <main class="page">
-      <div class="top-row">
-        <span id="games-mode-caption" class="top-caption">Сборные</span>
-      </div>
       <h1 id="games-title">Игровые дисциплины</h1>
 
       <section class="games-list">
@@ -1411,8 +1397,6 @@ GAMES_TEMPLATE = """
       const I18N = {
         ru: {
           pageTitle: "Дисциплины",
-          modeTeams: "Сборные",
-          modeTournaments: "Турниры",
           disciplinesTitle: "Игровые дисциплины",
           wotTitle: "МИР ТАНКОВ",
           menuOpen: "Открыть меню",
@@ -1432,8 +1416,6 @@ GAMES_TEMPLATE = """
         },
         en: {
           pageTitle: "Disciplines",
-          modeTeams: "National teams",
-          modeTournaments: "Tournaments",
           disciplinesTitle: "Game disciplines",
           wotTitle: "WORLD OF TANKS",
           menuOpen: "Open menu",
@@ -1453,7 +1435,6 @@ GAMES_TEMPLATE = """
         },
       };
 
-      const modeCaption = document.getElementById("games-mode-caption");
       const gamesTitle = document.getElementById("games-title");
       const mode = new URLSearchParams(window.location.search).get("view");
       const clashRoyaleLink = document.getElementById("clash-royale-link");
@@ -1532,10 +1513,6 @@ GAMES_TEMPLATE = """
         if (wotLabel) {
           wotLabel.textContent = text.wotTitle;
         }
-        if (modeCaption) {
-          modeCaption.textContent = safeMode === "tournaments" ? text.modeTournaments : text.modeTeams;
-        }
-
         closeMenu?.setAttribute("aria-label", text.close);
         closeSettings?.setAttribute("aria-label", text.close);
         menuToggle?.setAttribute("aria-label", text.menuOpen);
