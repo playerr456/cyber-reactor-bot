@@ -300,6 +300,52 @@ HTML_TEMPLATE = """
         object-fit: cover;
       }
 
+      .top-logo-badge {
+        position: fixed;
+        top: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 40;
+        width: var(--top-logo-size);
+        height: var(--top-logo-size);
+        border-radius: 50%;
+        background: var(--top-logo-bg);
+        border: 1px solid var(--top-logo-border);
+        display: grid;
+        place-items: center;
+        pointer-events: none;
+      }
+
+      .top-logo-badge img {
+        width: calc(var(--top-logo-size) - 2px);
+        height: calc(var(--top-logo-size) - 2px);
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .top-logo-badge {
+        position: fixed;
+        top: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 40;
+        width: var(--top-logo-size);
+        height: var(--top-logo-size);
+        border-radius: 50%;
+        background: var(--top-logo-bg);
+        border: 1px solid var(--top-logo-border);
+        display: grid;
+        place-items: center;
+        pointer-events: none;
+      }
+
+      .top-logo-badge img {
+        width: calc(var(--top-logo-size) - 2px);
+        height: calc(var(--top-logo-size) - 2px);
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
       .overlay {
         position: fixed;
         inset: 0;
@@ -1010,8 +1056,11 @@ GAMES_TEMPLATE = """
         --muted: #bac6d8;
         --link: #a8ccff;
         --top-button-size: 44px;
+        --top-logo-size: 64px;
         --top-control-bg: #17212B;
         --top-control-border: rgba(255, 255, 255, 0.24);
+        --top-logo-bg: #000000;
+        --top-logo-border: rgba(255, 255, 255, 0.08);
         --ui-icon-filter: brightness(0) invert(1);
       }
 
@@ -1024,6 +1073,8 @@ GAMES_TEMPLATE = """
         --link: #2058cc;
         --top-control-bg: #d7d7d7;
         --top-control-border: rgba(15, 23, 42, 0.28);
+        --top-logo-bg: #000000;
+        --top-logo-border: rgba(15, 23, 42, 0.35);
         --ui-icon-filter: none;
       }
 
@@ -1220,21 +1271,8 @@ GAMES_TEMPLATE = """
       .top-row {
         display: flex;
         align-items: center;
-        justify-content: space-between;
+        justify-content: flex-end;
         gap: 10px;
-      }
-
-      .back-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        text-decoration: none;
-        color: var(--text);
-        border: 1px solid var(--panel-line);
-        border-radius: 10px;
-        padding: 9px 12px;
-        background: var(--panel);
-        font-weight: 600;
       }
 
       .top-caption {
@@ -1292,6 +1330,9 @@ GAMES_TEMPLATE = """
       <img class="menu-icon-img" src="/icons/menu_icon.png" alt="" aria-hidden="true" />
       <span class="sr-only" data-i18n="menuOpen">Открыть меню</span>
     </button>
+    <div class="top-logo-badge" aria-hidden="true">
+      <img src="__MAIN_LOGO_SRC__" alt="" />
+    </div>
     <button id="settings-toggle" class="settings-toggle" type="button" aria-label="Настройки">
       <img class="settings-icon-img" src="/icons/setings_icon.png" alt="" aria-hidden="true" />
       <span class="sr-only" data-i18n="settingsTitle">Настройки</span>
@@ -1346,7 +1387,6 @@ GAMES_TEMPLATE = """
 
     <main class="page">
       <div class="top-row">
-        <a id="games-back-link" class="back-link" href="/">← Главная страница</a>
         <span id="games-mode-caption" class="top-caption">Сборные</span>
       </div>
       <h1 id="games-title">Игровые дисциплины</h1>
@@ -1386,7 +1426,6 @@ GAMES_TEMPLATE = """
       const I18N = {
         ru: {
           pageTitle: "Дисциплины",
-          backToMain: "← Главная страница",
           modeTeams: "Сборные",
           modeTournaments: "Турниры",
           disciplinesTitle: "Игровые дисциплины",
@@ -1408,7 +1447,6 @@ GAMES_TEMPLATE = """
         },
         en: {
           pageTitle: "Disciplines",
-          backToMain: "← Home",
           modeTeams: "National teams",
           modeTournaments: "Tournaments",
           disciplinesTitle: "Game disciplines",
@@ -1430,7 +1468,6 @@ GAMES_TEMPLATE = """
         },
       };
 
-      const backLink = document.getElementById("games-back-link");
       const modeCaption = document.getElementById("games-mode-caption");
       const gamesTitle = document.getElementById("games-title");
       const mode = new URLSearchParams(window.location.search).get("view");
@@ -1501,9 +1538,6 @@ GAMES_TEMPLATE = """
           el.textContent = text[key] || I18N.ru[key] || key;
         });
 
-        if (backLink) {
-          backLink.textContent = text.backToMain;
-        }
         if (gamesTitle) {
           gamesTitle.textContent = text.disciplinesTitle;
         }
@@ -1569,8 +1603,10 @@ GAMES_TEMPLATE = """
 
 
 def render_games_template() -> str:
+    main_logo_url = resolve_main_logo_url()
     return (
-        GAMES_TEMPLATE.replace("__CS2_LOGO_SRC__", GAME_LOGOS["cs2"])
+        GAMES_TEMPLATE.replace("__MAIN_LOGO_SRC__", main_logo_url)
+        .replace("__CS2_LOGO_SRC__", GAME_LOGOS["cs2"])
         .replace("__DOTA2_LOGO_SRC__", GAME_LOGOS["dota2"])
         .replace("__CR_LOGO_SRC__", GAME_LOGOS["cr"])
         .replace("__MLBB_LOGO_SRC__", GAME_LOGOS["mlbb"])
@@ -1599,8 +1635,11 @@ ACHIEVEMENTS_TEMPLATE = """
         --panel-line: rgba(255, 255, 255, 0.16);
         --muted: #bac6d8;
         --top-button-size: 44px;
+        --top-logo-size: 64px;
         --top-control-bg: #17212B;
         --top-control-border: rgba(255, 255, 255, 0.24);
+        --top-logo-bg: #000000;
+        --top-logo-border: rgba(255, 255, 255, 0.08);
         --ui-icon-filter: brightness(0) invert(1);
       }
 
@@ -1612,6 +1651,8 @@ ACHIEVEMENTS_TEMPLATE = """
         --muted: #5a6678;
         --top-control-bg: #d7d7d7;
         --top-control-border: rgba(15, 23, 42, 0.28);
+        --top-logo-bg: #000000;
+        --top-logo-border: rgba(15, 23, 42, 0.35);
         --ui-icon-filter: none;
       }
 
@@ -1805,18 +1846,6 @@ ACHIEVEMENTS_TEMPLATE = """
         padding: 74px 0 28px;
       }
 
-      .back-link {
-        display: inline-flex;
-        align-items: center;
-        text-decoration: none;
-        color: var(--text);
-        border: 1px solid var(--panel-line);
-        border-radius: 10px;
-        padding: 9px 12px;
-        background: var(--panel);
-        margin-bottom: 16px;
-      }
-
       .message {
         font-size: clamp(24px, 5vw, 46px);
         line-height: 1.15;
@@ -1830,6 +1859,9 @@ ACHIEVEMENTS_TEMPLATE = """
       <img class="menu-icon-img" src="/icons/menu_icon.png" alt="" aria-hidden="true" />
       <span class="sr-only" data-i18n="menuOpen">Открыть меню</span>
     </button>
+    <div class="top-logo-badge" aria-hidden="true">
+      <img src="__MAIN_LOGO_SRC__" alt="" />
+    </div>
     <button id="settings-toggle" class="settings-toggle" type="button" aria-label="Настройки">
       <img class="settings-icon-img" src="/icons/setings_icon.png" alt="" aria-hidden="true" />
       <span class="sr-only" data-i18n="settingsTitle">Настройки</span>
@@ -1883,7 +1915,6 @@ ACHIEVEMENTS_TEMPLATE = """
     </aside>
 
     <main class="page">
-      <a id="achievements-back-link" class="back-link" href="/">← Главная страница</a>
       <div id="achievements-message" class="message">Слишком много добились, не поместится на сайте</div>
     </main>
 
@@ -1898,7 +1929,6 @@ ACHIEVEMENTS_TEMPLATE = """
       const I18N = {
         ru: {
           pageTitle: "Достижения",
-          backToMain: "← Главная страница",
           message: "Слишком много добились, не поместится на сайте",
           menuOpen: "Открыть меню",
           sidebarTitle: "Навигация",
@@ -1917,7 +1947,6 @@ ACHIEVEMENTS_TEMPLATE = """
         },
         en: {
           pageTitle: "Achievements",
-          backToMain: "← Home",
           message: "We've achieved too much, it won't fit on the website.",
           menuOpen: "Open menu",
           sidebarTitle: "Navigation",
@@ -1936,7 +1965,6 @@ ACHIEVEMENTS_TEMPLATE = """
         },
       };
 
-      const backLink = document.getElementById("achievements-back-link");
       const message = document.getElementById("achievements-message");
       const overlay = document.getElementById("overlay");
       const sidebar = document.getElementById("sidebar");
@@ -1995,9 +2023,6 @@ ACHIEVEMENTS_TEMPLATE = """
           const key = el.dataset.i18n;
           el.textContent = text[key] || I18N.ru[key] || key;
         });
-        if (backLink) {
-          backLink.textContent = text.backToMain;
-        }
         if (message) {
           message.textContent = text.message;
         }
@@ -2032,6 +2057,11 @@ ACHIEVEMENTS_TEMPLATE = """
   </body>
 </html>
 """
+
+
+def render_achievements_template() -> str:
+    main_logo_url = resolve_main_logo_url()
+    return ACHIEVEMENTS_TEMPLATE.replace("__MAIN_LOGO_SRC__", main_logo_url)
 
 
 DISCIPLINE_TEMPLATE = """
@@ -3293,7 +3323,7 @@ async def discipline_page(slug: str, request: Request) -> HTMLResponse:
 
 @app.get("/achievements", response_class=HTMLResponse)
 async def achievements_page(request: Request) -> HTMLResponse:
-    return HTMLResponse(content=ACHIEVEMENTS_TEMPLATE)
+    return HTMLResponse(content=render_achievements_template())
 
 
 @app.get("/clash-royale", response_class=HTMLResponse)
