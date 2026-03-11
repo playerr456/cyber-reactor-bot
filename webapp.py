@@ -1097,6 +1097,29 @@ GAMES_TEMPLATE = """
         filter: var(--ui-icon-filter);
       }
 
+      .top-logo-badge {
+        position: fixed;
+        top: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 40;
+        width: var(--top-logo-size);
+        height: var(--top-logo-size);
+        border-radius: 50%;
+        background: var(--top-logo-bg);
+        border: 1px solid var(--top-logo-border);
+        display: grid;
+        place-items: center;
+        pointer-events: none;
+      }
+
+      .top-logo-badge img {
+        width: calc(var(--top-logo-size) - 2px);
+        height: calc(var(--top-logo-size) - 2px);
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
       .overlay {
         position: fixed;
         inset: 0;
@@ -1673,6 +1696,29 @@ ACHIEVEMENTS_TEMPLATE = """
         object-fit: contain;
         display: block;
         filter: var(--ui-icon-filter);
+      }
+
+      .top-logo-badge {
+        position: fixed;
+        top: 4px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 40;
+        width: var(--top-logo-size);
+        height: var(--top-logo-size);
+        border-radius: 50%;
+        background: var(--top-logo-bg);
+        border: 1px solid var(--top-logo-border);
+        display: grid;
+        place-items: center;
+        pointer-events: none;
+      }
+
+      .top-logo-badge img {
+        width: calc(var(--top-logo-size) - 2px);
+        height: calc(var(--top-logo-size) - 2px);
+        border-radius: 50%;
+        object-fit: cover;
       }
 
       .overlay {
