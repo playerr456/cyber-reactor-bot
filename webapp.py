@@ -35,11 +35,36 @@ if not logos_dir.exists():
 if not logos_dir.exists():
     logos_dir.mkdir(parents=True, exist_ok=True)
 
+main_logo_dir = BASE_DIR / "cyber-reactor_logo"
+if not main_logo_dir.exists():
+    main_logo_dir = assets_dir
+
+tournaments_banner_dir = BASE_DIR / "tournaments_logos"
+if not tournaments_banner_dir.exists():
+    tournaments_banner_dir = BASE_DIR / "tournaments_page_banners"
+if not tournaments_banner_dir.exists():
+    tournaments_banner_dir = assets_dir
+
 app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
 app.mount("/logos", StaticFiles(directory=logos_dir), name="logos")
+app.mount("/main-logo", StaticFiles(directory=main_logo_dir), name="main_logo")
+app.mount("/tournaments-assets", StaticFiles(directory=tournaments_banner_dir), name="tournaments_assets")
 
 BANNER_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
 BANNER_FALLBACKS = ["banner1.jpg", "banner2.jpg", "banner3.jpg"]
+
+
+def list_image_files(directory: Path) -> list[Path]:
+    if not directory.exists():
+        return []
+    return sorted(
+        (
+            file_path
+            for file_path in directory.iterdir()
+            if file_path.is_file() and file_path.suffix.lower() in BANNER_IMAGE_EXTENSIONS
+        ),
+        key=lambda file_path: file_path.name.lower(),
+    )
 
 
 def resolve_banner_urls() -> list[str]:
@@ -51,14 +76,7 @@ def resolve_banner_urls() -> list[str]:
     if all(path.exists() and path.is_file() for path in strict_banners):
         return fallback_urls
 
-    image_files = sorted(
-        (
-            file_path
-            for file_path in assets_dir.iterdir()
-            if file_path.is_file() and file_path.suffix.lower() in BANNER_IMAGE_EXTENSIONS
-        ),
-        key=lambda file_path: file_path.name.lower(),
-    )
+    image_files = list_image_files(assets_dir)
     if not image_files:
         return fallback_urls
 
@@ -66,6 +84,26 @@ def resolve_banner_urls() -> list[str]:
     while len(selected) < 3:
         selected.append(selected[-1])
     return [f"/assets/{quote(file_path.name)}" for file_path in selected]
+
+
+def resolve_main_logo_url() -> str:
+    logo_images = list_image_files(main_logo_dir)
+    if logo_images:
+        return f"/main-logo/{quote(logo_images[0].name)}"
+    fallback_logo = assets_dir / "logo.jpg"
+    if fallback_logo.exists():
+        return "/assets/logo.jpg"
+    asset_images = list_image_files(assets_dir)
+    if asset_images:
+        return f"/assets/{quote(asset_images[0].name)}"
+    return "/assets/logo.jpg"
+
+
+def resolve_tournaments_banner_url() -> str:
+    tournament_images = list_image_files(tournaments_banner_dir)
+    if tournament_images:
+        return f"/tournaments-assets/{quote(tournament_images[0].name)}"
+    return resolve_banner_urls()[0]
 
 
 TOURNAMENTS = ["clash royale", "dota 2", "cs go"]
@@ -423,6 +461,24 @@ HTML_TEMPLATE = """
         right: 10px;
       }
 
+      .single-tournament-banner {
+        width: 100%;
+        border-bottom: 1px solid var(--panel-line);
+      }
+
+      .single-tournament-banner .slide {
+        position: relative;
+        opacity: 1;
+      }
+
+      .single-tournament-banner .slide img {
+        width: 100%;
+        height: auto;
+        max-height: min(72vh, 720px);
+        object-fit: contain;
+        display: block;
+      }
+
       .contacts-inline {
         padding: 18px 16px 8px;
       }
@@ -464,7 +520,7 @@ HTML_TEMPLATE = """
       <span class="sr-only" data-i18n="menuOpen">Открыть меню</span>
     </button>
     <div class="top-logo-badge" aria-hidden="true">
-      <img src="/assets/logo.jpg" alt="" />
+      <img src="__MAIN_LOGO_SRC__" alt="" />
     </div>
     <button id="settings-toggle" class="settings-toggle" type="button" aria-label="Настройки">
       <span class="settings-icon" aria-hidden="true">&#9881;</span>
@@ -837,8 +893,10 @@ HTML_TEMPLATE = """
 
 def render_home_template(*, include_contacts: bool, tournaments_active: bool) -> str:
     banner_urls = resolve_banner_urls()
+    main_logo_url = resolve_main_logo_url()
     html = (
-        HTML_TEMPLATE.replace("__BANNER_1_SRC__", banner_urls[0])
+        HTML_TEMPLATE.replace("__MAIN_LOGO_SRC__", main_logo_url)
+        .replace("__BANNER_1_SRC__", banner_urls[0])
         .replace("__BANNER_2_SRC__", banner_urls[1])
         .replace("__BANNER_3_SRC__", banner_urls[2])
     )
@@ -866,6 +924,21 @@ def render_home_template(*, include_contacts: bool, tournaments_active: bool) ->
 
 def build_tournaments_landing_template() -> str:
     html = render_home_template(include_contacts=False, tournaments_active=True)
+    tournament_banner_url = resolve_tournaments_banner_url()
+    tournaments_section = (
+        '      <section id="top-banner" class="single-tournament-banner" aria-label="Турнирный баннер">\n'
+        '        <div class="slide active">\n'
+        f'          <img src="{tournament_banner_url}" alt="Турнирный баннер" />\n'
+        "        </div>\n"
+        "      </section>"
+    )
+    html = re.sub(
+        r"      <section id=\"top-banner\" class=\"carousel\" aria-label=\"Баннеры\">.*?      </section>",
+        tournaments_section,
+        html,
+        count=1,
+        flags=re.DOTALL,
+    )
     return html
 
 
