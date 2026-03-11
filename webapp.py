@@ -608,14 +608,14 @@ HTML_TEMPLATE = """
   </head>
   <body>
     <button id="menu-toggle" class="menu-toggle" type="button" aria-label="Открыть меню">
-      <img class="menu-icon-img" src="/icons/menu_icon.png" alt="" aria-hidden="true" />
+      <img class="menu-icon-img" src="/icons/menu_icon.svg" alt="" aria-hidden="true" />
       <span class="sr-only" data-i18n="menuOpen">Открыть меню</span>
     </button>
     <div class="top-logo-badge" aria-hidden="true">
       <img src="__MAIN_LOGO_SRC__" alt="" />
     </div>
     <button id="settings-toggle" class="settings-toggle" type="button" aria-label="Настройки">
-      <img class="settings-icon-img" src="/icons/setings_icon.png" alt="" aria-hidden="true" />
+      <img class="settings-icon-img" src="/icons/settings_icon.svg" alt="" aria-hidden="true" />
       <span class="sr-only" data-i18n="settingsTitle">Настройки</span>
     </button>
     <div id="overlay" class="overlay"></div>
@@ -1327,14 +1327,14 @@ GAMES_TEMPLATE = """
   </head>
   <body>
     <button id="menu-toggle" class="menu-toggle" type="button" aria-label="Открыть меню">
-      <img class="menu-icon-img" src="/icons/menu_icon.png" alt="" aria-hidden="true" />
+      <img class="menu-icon-img" src="/icons/menu_icon.svg" alt="" aria-hidden="true" />
       <span class="sr-only" data-i18n="menuOpen">Открыть меню</span>
     </button>
     <div class="top-logo-badge" aria-hidden="true">
       <img src="__MAIN_LOGO_SRC__" alt="" />
     </div>
     <button id="settings-toggle" class="settings-toggle" type="button" aria-label="Настройки">
-      <img class="settings-icon-img" src="/icons/setings_icon.png" alt="" aria-hidden="true" />
+      <img class="settings-icon-img" src="/icons/settings_icon.svg" alt="" aria-hidden="true" />
       <span class="sr-only" data-i18n="settingsTitle">Настройки</span>
     </button>
     <div id="overlay" class="overlay"></div>
@@ -1856,14 +1856,14 @@ ACHIEVEMENTS_TEMPLATE = """
   </head>
   <body>
     <button id="menu-toggle" class="menu-toggle" type="button" aria-label="Открыть меню">
-      <img class="menu-icon-img" src="/icons/menu_icon.png" alt="" aria-hidden="true" />
+      <img class="menu-icon-img" src="/icons/menu_icon.svg" alt="" aria-hidden="true" />
       <span class="sr-only" data-i18n="menuOpen">Открыть меню</span>
     </button>
     <div class="top-logo-badge" aria-hidden="true">
       <img src="__MAIN_LOGO_SRC__" alt="" />
     </div>
     <button id="settings-toggle" class="settings-toggle" type="button" aria-label="Настройки">
-      <img class="settings-icon-img" src="/icons/setings_icon.png" alt="" aria-hidden="true" />
+      <img class="settings-icon-img" src="/icons/settings_icon.svg" alt="" aria-hidden="true" />
       <span class="sr-only" data-i18n="settingsTitle">Настройки</span>
     </button>
     <div id="overlay" class="overlay"></div>
