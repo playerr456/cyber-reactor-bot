@@ -201,7 +201,6 @@ HTML_TEMPLATE = """
         --link: #a8ccff;
         --top-button-size: 44px;
         --top-logo-size: 64px;
-        --top-strip-height: 100px;
         --top-control-bg: #17212B;
         --top-control-border: rgba(255, 255, 255, 0.24);
         --top-control-icon: #e7edf9;
@@ -252,7 +251,7 @@ HTML_TEMPLATE = """
       .menu-toggle,
       .settings-toggle {
         position: fixed;
-        top: calc((var(--top-strip-height) - var(--top-button-size)) / 2);
+        top: 14px;
         z-index: 40;
         width: var(--top-button-size);
         height: var(--top-button-size);
@@ -286,7 +285,7 @@ HTML_TEMPLATE = """
 
       .top-logo-badge {
         position: fixed;
-        top: calc((var(--top-strip-height) - var(--top-logo-size, 64px)) / 2);
+        top: 0;
         left: 50%;
         transform: translateX(-50%);
         z-index: 40;
@@ -297,27 +296,66 @@ HTML_TEMPLATE = """
         border: 1px solid var(--top-logo-border);
         display: grid;
         place-items: center;
-        overflow: hidden;
         pointer-events: none;
       }
 
       .top-logo-badge img {
-        width: 100%;
-        height: 100%;
+        width: calc(var(--top-logo-size, 64px) - 2px);
+        height: calc(var(--top-logo-size, 64px) - 2px);
+        max-width: calc(var(--top-logo-size, 64px) - 2px);
+        max-height: calc(var(--top-logo-size, 64px) - 2px);
+        border-radius: 50%;
         object-fit: cover;
-        display: block;
       }
 
-      .top-fixed-strip {
+      .top-logo-badge {
         position: fixed;
         top: 0;
-        left: 0;
-        right: 0;
-        height: var(--top-strip-height);
-        background: var(--panel);
-        border-bottom: 1px solid var(--panel-line);
-        z-index: 35;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 40;
+        width: var(--top-logo-size, 64px);
+        height: var(--top-logo-size, 64px);
+        border-radius: 50%;
+        background: var(--top-logo-bg);
+        border: 1px solid var(--top-logo-border);
+        display: grid;
+        place-items: center;
         pointer-events: none;
+      }
+
+      .top-logo-badge img {
+        width: calc(var(--top-logo-size, 64px) - 2px);
+        height: calc(var(--top-logo-size, 64px) - 2px);
+        max-width: calc(var(--top-logo-size, 64px) - 2px);
+        max-height: calc(var(--top-logo-size, 64px) - 2px);
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .top-logo-badge {
+        position: fixed;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 40;
+        width: var(--top-logo-size, 64px);
+        height: var(--top-logo-size, 64px);
+        border-radius: 50%;
+        background: var(--top-logo-bg);
+        border: 1px solid var(--top-logo-border);
+        display: grid;
+        place-items: center;
+        pointer-events: none;
+      }
+
+      .top-logo-badge img {
+        width: calc(var(--top-logo-size, 64px) - 2px);
+        height: calc(var(--top-logo-size, 64px) - 2px);
+        max-width: calc(var(--top-logo-size, 64px) - 2px);
+        max-height: calc(var(--top-logo-size, 64px) - 2px);
+        border-radius: 50%;
+        object-fit: cover;
       }
 
       .overlay {
@@ -452,7 +490,7 @@ HTML_TEMPLATE = """
       .page {
         width: min(1100px, 100%);
         margin: 0 auto;
-        padding: calc(var(--top-strip-height) + 4px) 0 28px;
+        padding: 72px 0 28px;
       }
 
       .carousel {
@@ -557,7 +595,6 @@ HTML_TEMPLATE = """
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
   </head>
   <body>
-    <div class="top-fixed-strip" aria-hidden="true"></div>
     <button id="menu-toggle" class="menu-toggle" type="button" aria-label="Открыть меню">
       <img class="menu-icon-img" src="/icons/menu_icon.png" alt="" aria-hidden="true" />
       <span class="sr-only" data-i18n="menuOpen">Открыть меню</span>
@@ -994,7 +1031,6 @@ GAMES_TEMPLATE = """
         --link: #a8ccff;
         --top-button-size: 44px;
         --top-logo-size: 64px;
-        --top-strip-height: 100px;
         --top-control-bg: #17212B;
         --top-control-border: rgba(255, 255, 255, 0.24);
         --top-logo-bg: #000000;
@@ -1043,7 +1079,7 @@ GAMES_TEMPLATE = """
       .menu-toggle,
       .settings-toggle {
         position: fixed;
-        top: calc((var(--top-strip-height) - var(--top-button-size)) / 2);
+        top: 14px;
         z-index: 40;
         width: var(--top-button-size);
         height: var(--top-button-size);
@@ -1075,7 +1111,7 @@ GAMES_TEMPLATE = """
 
       .top-logo-badge {
         position: fixed;
-        top: calc((var(--top-strip-height) - var(--top-logo-size, 64px)) / 2);
+        top: 0;
         left: 50%;
         transform: translateX(-50%);
         z-index: 40;
@@ -1086,27 +1122,16 @@ GAMES_TEMPLATE = """
         border: 1px solid var(--top-logo-border);
         display: grid;
         place-items: center;
-        overflow: hidden;
         pointer-events: none;
       }
 
       .top-logo-badge img {
-        width: 100%;
-        height: 100%;
+        width: calc(var(--top-logo-size, 64px) - 2px);
+        height: calc(var(--top-logo-size, 64px) - 2px);
+        max-width: calc(var(--top-logo-size, 64px) - 2px);
+        max-height: calc(var(--top-logo-size, 64px) - 2px);
+        border-radius: 50%;
         object-fit: cover;
-        display: block;
-      }
-
-      .top-fixed-strip {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: var(--top-strip-height);
-        background: var(--panel);
-        border-bottom: 1px solid var(--panel-line);
-        z-index: 35;
-        pointer-events: none;
       }
 
       .overlay {
@@ -1239,7 +1264,7 @@ GAMES_TEMPLATE = """
       .page {
         width: min(860px, calc(100% - 20px));
         margin: 0 auto;
-        padding: calc(var(--top-strip-height) + 18px) 0 26px;
+        padding: 72px 0 26px;
       }
 
       h1 {
@@ -1289,7 +1314,6 @@ GAMES_TEMPLATE = """
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
   </head>
   <body>
-    <div class="top-fixed-strip" aria-hidden="true"></div>
     <button id="menu-toggle" class="menu-toggle" type="button" aria-label="Открыть меню">
       <img class="menu-icon-img" src="/icons/menu_icon.png" alt="" aria-hidden="true" />
       <span class="sr-only" data-i18n="menuOpen">Открыть меню</span>
@@ -1615,7 +1639,6 @@ ACHIEVEMENTS_TEMPLATE = """
         --muted: #bac6d8;
         --top-button-size: 44px;
         --top-logo-size: 64px;
-        --top-strip-height: 100px;
         --top-control-bg: #17212B;
         --top-control-border: rgba(255, 255, 255, 0.24);
         --top-logo-bg: #000000;
@@ -1663,7 +1686,7 @@ ACHIEVEMENTS_TEMPLATE = """
       .menu-toggle,
       .settings-toggle {
         position: fixed;
-        top: calc((var(--top-strip-height) - var(--top-button-size)) / 2);
+        top: 14px;
         z-index: 40;
         width: var(--top-button-size);
         height: var(--top-button-size);
@@ -1695,7 +1718,7 @@ ACHIEVEMENTS_TEMPLATE = """
 
       .top-logo-badge {
         position: fixed;
-        top: calc((var(--top-strip-height) - var(--top-logo-size, 64px)) / 2);
+        top: 0;
         left: 50%;
         transform: translateX(-50%);
         z-index: 40;
@@ -1706,27 +1729,16 @@ ACHIEVEMENTS_TEMPLATE = """
         border: 1px solid var(--top-logo-border);
         display: grid;
         place-items: center;
-        overflow: hidden;
         pointer-events: none;
       }
 
       .top-logo-badge img {
-        width: 100%;
-        height: 100%;
+        width: calc(var(--top-logo-size, 64px) - 2px);
+        height: calc(var(--top-logo-size, 64px) - 2px);
+        max-width: calc(var(--top-logo-size, 64px) - 2px);
+        max-height: calc(var(--top-logo-size, 64px) - 2px);
+        border-radius: 50%;
         object-fit: cover;
-        display: block;
-      }
-
-      .top-fixed-strip {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: var(--top-strip-height);
-        background: var(--panel);
-        border-bottom: 1px solid var(--panel-line);
-        z-index: 35;
-        pointer-events: none;
       }
 
       .overlay {
@@ -1859,7 +1871,7 @@ ACHIEVEMENTS_TEMPLATE = """
       .page {
         width: min(900px, calc(100% - 24px));
         margin: 0 auto;
-        padding: calc(var(--top-strip-height) + 18px) 0 28px;
+        padding: 74px 0 28px;
       }
 
       .message {
@@ -1871,7 +1883,6 @@ ACHIEVEMENTS_TEMPLATE = """
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
   </head>
   <body>
-    <div class="top-fixed-strip" aria-hidden="true"></div>
     <button id="menu-toggle" class="menu-toggle" type="button" aria-label="Открыть меню">
       <img class="menu-icon-img" src="/icons/menu_icon.png" alt="" aria-hidden="true" />
       <span class="sr-only" data-i18n="menuOpen">Открыть меню</span>
