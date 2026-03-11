@@ -533,30 +533,6 @@ HTML_TEMPLATE = """
         width: 44px;
       }
 
-      .carousel-nav {
-        position: absolute;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 34px;
-        height: 34px;
-        border-radius: 999px;
-        border: 1px solid rgba(255, 255, 255, 0.35);
-        background: rgba(0, 0, 0, 0.35);
-        color: #ffffff;
-        font-size: 20px;
-        line-height: 1;
-        cursor: pointer;
-        z-index: 2;
-      }
-
-      .carousel-nav.prev {
-        left: 10px;
-      }
-
-      .carousel-nav.next {
-        right: 10px;
-      }
-
       .single-tournament-banner {
         width: 100%;
         border-bottom: 1px solid var(--panel-line);
@@ -677,8 +653,6 @@ HTML_TEMPLATE = """
         <div class="slide">
           <img src="__BANNER_3_SRC__" alt="Баннер 3" />
         </div>
-        <button class="carousel-nav prev" type="button" aria-label="Предыдущий баннер">&#8249;</button>
-        <button class="carousel-nav next" type="button" aria-label="Следующий баннер">&#8250;</button>
         <div class="dots">
           <button class="dot active" type="button" data-index="0" aria-label="Баннер 1"></button>
           <button class="dot" type="button" data-index="1" aria-label="Баннер 2"></button>
@@ -808,8 +782,6 @@ HTML_TEMPLATE = """
       const slides = Array.from(document.querySelectorAll(".slide"));
       const dots = Array.from(document.querySelectorAll(".dot"));
       const carousel = document.getElementById("top-banner");
-      const prevBannerBtn = carousel?.querySelector(".carousel-nav.prev");
-      const nextBannerBtn = carousel?.querySelector(".carousel-nav.next");
       const overlay = document.getElementById("overlay");
       const sidebar = document.getElementById("sidebar");
       const settingsPanel = document.getElementById("settings-panel");
@@ -899,16 +871,6 @@ HTML_TEMPLATE = """
           showSlide(Number(dot.dataset.index || 0));
           startAutoplay();
         });
-      });
-
-      prevBannerBtn?.addEventListener("click", () => {
-        prevSlide();
-        startAutoplay();
-      });
-
-      nextBannerBtn?.addEventListener("click", () => {
-        nextSlide();
-        startAutoplay();
       });
 
       carousel?.addEventListener(
